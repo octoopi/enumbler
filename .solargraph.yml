@@ -1,0 +1,15 @@
+---
+include:
+- "**/*.rb"
+exclude:
+- spec/**/*
+- vendor/**/*
+- ".bundle/**/*"
+require:
+- activerecord
+- activesupport
+domains: []
+reporters:
+- rubocop
+require_paths: []
+max_files: 5000

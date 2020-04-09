@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+set -vx
+
+bundle install
+
+# Gem files updated, now setting pre-commit hook:
+
+./bin/pre_commit_rubocop.rb install
+
+# All set.  Run: `rspec` to test things
+
