@@ -1,4 +1,4 @@
-name: CI Testing
+name: CI Matrix Testing
 
 on:
   push:
@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        ruby_version: [2.6, 2.7]
+        ruby_version: [2.5, 2.6]
 
     steps:
     - uses: actions/checkout@v2
@@ -22,6 +22,10 @@ jobs:
       uses: actions/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby_version }}
+
+    - name: Install sqlite3
+      run: |
+        sudo apt-get install libsqlite3-dev
 
     - name: Install dependencies
       run: |

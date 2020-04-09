@@ -28,6 +28,10 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
+## Roadmap
+
+Ideally, we could make this work more like a traditional `enum`; for example, overriding the `.where` method by allowing something like: `House.where(color: :blue)` instead of `House.where_color(:blue)`.  But right now am in a rush and not sure how to go about doing that properly.
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/linguabee/enumbler.
