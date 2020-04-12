@@ -14,13 +14,16 @@ ActiveRecord::Schema.define do
 end
 
 class ApplicationRecord < ActiveRecord::Base
+  # @!parse extend Enumbler::ClassMethods
+  include Enumbler
+
   self.abstract_class = true
 end
 
 # Our Color has been Enumbled with some basic colors.
 class Color < ApplicationRecord
-  # @!parse extend Enumbler::ClassMethods
-  include Enumbler
+  # @!parse extend Enumbler::Enabler::ClassMethods
+  include Enumbler::Enabler
 
   enumble :black, 1
   enumble :white, 2
@@ -30,8 +33,6 @@ end
 
 # Our House class, it has a color of course!
 class House < ApplicationRecord
-  # @!parse extend Enumbler::ClassMethods
-  include Enumbler
   enumbled_to :color
 end
 
