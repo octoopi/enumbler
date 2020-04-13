@@ -47,36 +47,49 @@ module Enumbler
     #   end
     #
     # @param name [Symbol] symbol representation of the class this belongs_to
+    # @param prefix [Boolean] default: false; prefix the instance method
+    #   attributes with the Enumble name, ex: `House.color_black?` instead of
+    #   `House.black?`
+    # @param scope_prefix [string] optional, prefix the class scopes, for
+    #   example: `where_by` will make it `House.where_by_color(:black)`
     # @param **options [Hash] additional options passed to `belongs_to`
-    def enumbled_to(name, scope = nil, prefix: nil, **options)
+    def enumbled_to(name, scope = nil, prefix: false, scope_prefix: nil, **options)
       class_name = name.to_s.classify
-      @enumbled_model = class_name.constantize
+      enumbled_model = class_name.constantize
 
-      unless @enumbled_model.respond_to?(:enumbles)
-        raise Error, "The class #{class_name} does not have any enumbles defined."\
+      unless enumbled_model.respond_to?(:enumbles)
+        raise Error, "The model #{class_name} does not have any enumbles defined."\
           " You can add them via `#{class_name}.enumble :blue, 1`."
       end
 
       belongs_to(name, scope, **options)
 
-      define_dynamic_methods_for_enumbled_to_models(prefix: prefix)
+      define_dynamic_methods_for_enumbled_to_models(enumbled_model, prefix: prefix, scope_prefix: scope_prefix)
     rescue NameError
-      raise Error, "The class #{class_name} cannot be found.  Uninitialized constant."
+      raise Error, "The model #{class_name} cannot be found.  Uninitialized constant."
     end
 
     private
 
-    def define_dynamic_methods_for_enumbled_to_models(prefix: nil)
-      model_name = @enumbled_model.to_s.underscore
+    # Define the dynamic methods for this relationship.
+    #
+    # @todo - we should check for naming conflicts!
+    #     dangerous_attribute_method?(method_name)
+    #     method_defined_within?(method_name, self, Module)
+    def define_dynamic_methods_for_enumbled_to_models(enumbled_model, prefix: false, scope_prefix: nil)
+      model_name = enumbled_model.to_s.underscore
+      column_name = "#{model_name}_id"
 
-      method = if prefix.blank?
-                 model_name
-               else
-                 "#{prefix}_#{model_name}"
-               end
+      cmethod = scope_prefix.blank? ? model_name : "#{scope_prefix}_#{model_name}"
+      define_singleton_method(cmethod) do |*args|
+        where(column_name => enumbled_model.ids_from_enumablable(args))
+      end
 
-      define_singleton_method(method) do |*args|
-        where("#{model_name}_id": @enumbled_model.ids_from_enumablable(args))
+      enumbled_model.enumbles.each do |enumble|
+        method_name = prefix ? "#{model_name}_#{enumble.enum}?" : "#{enumble.enum}?"
+        not_method_name = prefix ? "#{model_name}_not_#{enumble.enum}?" : "not_#{enumble.enum}?"
+        define_method(method_name) { self[column_name] == enumble.id }
+        define_method(not_method_name) { self[column_name] != enumble.id }
       end
     end
   end

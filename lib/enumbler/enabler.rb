@@ -45,7 +45,7 @@ module Enumbler
       #
       #   # Dynamically adds the following methods:
       #   Color::BLACK   #=> 1
-      #   Color.black    #=> MyRecord.find(1)
+      #   Color.black    #=> Color.find(1)
       #   color.black?   #=> true || false
       #   color.is_black #=> true || false
       #
@@ -138,10 +138,12 @@ module Enumbler
 
       def define_dynamic_methods_and_constants_for_enumbled_model(enum, id)
         method_name = "#{enum}?"
+        not_method_name = "not_#{enum}?"
         alias_method_name = "is_#{enum}"
 
         const_set(enum.to_s.upcase, id)
         define_method(method_name) { self.id == id }
+        define_method(not_method_name) { self.id != id }
         alias_method alias_method_name, method_name
         define_singleton_method(enum) { find(id) }
       end

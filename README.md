@@ -1,6 +1,56 @@
 # Enumbler
 
-`Enums` are terrific, but they lack integrity.  Enumbler!
+`Enums` are terrific, but they lack integrity.  Enumbler! The _enum enabler_!  The goal is to allow one to maintain a true foreign_key database driven relationship that also behaves a little bit like an `enum`.  Best of both worlds?  We hope so.
+
+
+## Example
+
+Suppose you have a `House` and you want to add some `colors` to the house.  You are tempted to use an `enum` but the `Enumbler` is calling!
+
+```ruby
+ActiveRecord::Schema.define do
+  create_table :colors|t|
+    t.string :label, null: false
+  end
+
+  create_table :houses|t|
+    t.references :color, foreign_key: true, null: false
+  end
+end
+
+class ApplicationRecord < ActiveRecord::Base
+  include Enumbler
+  self.abstract_class = true
+end
+
+# Our Color has been Enumbled with some basic colors.
+class Color < ApplicationRecord
+  include Enumbler::Enabler
+
+  enumble :black, 1
+  enumble :white, 2
+  enumble :dark_brown, 3
+  enumble :infinity, 4, label: 'Infinity - and beyond!'
+end
+
+# Our House class, it has a color of course!
+class House < ApplicationRecord
+  enumbled_to :color
+end
+
+# This gives you some power:
+Color::BLACK           # => 1
+Color.black            # => equivalent to Color.find(1)
+Color.black.black?     # => true
+Color.black.is_black   # => true
+Color.white.not_black? # => true
+
+house = House.create!(color: Color.black)
+house.black?
+house.not_black?
+
+House.color(:black) # => [house]
+```
 
 ## Installation
 

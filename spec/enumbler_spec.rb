@@ -70,11 +70,11 @@ RSpec.describe Enumbler do
     it 'creates the query methods', :seed do
       expect(Color.black).to be_black
       expect(Color.black.is_black).to be true
+      expect(Color.white).to be_not_black
     end
   end
 
   describe '.enumbled_to', :seed do
-    after(:example) { House.enumbled_to(:color) }
     it 'raises an error when the class does not exist' do
       expect { House.enumbled_to(:bob) }.to raise_error(Enumbler::Error, /cannot be found/)
     end
@@ -93,10 +93,27 @@ RSpec.describe Enumbler do
       it 'raises an error when the Enumble is not defined' do
         expect { House.color(100, 1) }.to raise_error(Enumbler::Error, /Unable to find/)
       end
-      it 'allows a prefix to be set' do
+      it 'allows a scope prefix to be set' do
         house = House.create! color: Color.black
-        House.enumbled_to(:color, prefix: 'where_by')
+        House.enumbled_to(:color, scope_prefix: 'where_by')
         expect(House.where_by_color(:black)).to contain_exactly(house)
+      end
+      it 'adds instance methods to query the enumble' do
+        house = House.new color: Color.black
+        expect(house).to be_black
+        expect(house).not_to be_white
+
+        expect(house).to be_not_white
+        expect(house).not_to be_not_black
+      end
+      it 'can add a prefix if requested' do
+        House.enumbled_to(:color, prefix: true)
+        house = House.new color: Color.black
+        expect(house).to be_color_black
+        expect(house).not_to be_color_white
+
+        expect(house).to be_color_not_white
+        expect(house).not_to be_color_not_black
       end
     end
   end
