@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 module Enumbler
+  # Extending this module bestows the power of the `enumbler` to the underlying
+  # model.  For example, if you have a model `Color` you would include the
+  # `Enabler` to support the different colors your `Color` model represents.
   module Enabler
     extend ActiveSupport::Concern
 
@@ -73,14 +76,14 @@ module Enumbler
       # Integer, a Symbol, or an instance of Enumbled model.  This lookup is a
       # databse-free lookup.
       #
-      #   Color.ids_from_enumablable(1, 2) # => [1, 2]
-      #   Color.ids_from_enumablable(:black, :white) # => [1, 2]
-      #   Color.ids_from_enumablable(Color.black, Color.white) # => [1, 2]
+      #   Color.ids_from_enumbler(1, 2) # => [1, 2]
+      #   Color.ids_from_enumbler(:black, :white) # => [1, 2]
+      #   Color.ids_from_enumbler(Color.black, Color.white) # => [1, 2]
       #
       # @raise [Error] when there is no enumble to be found
       # @param *args [Integer, Symbol, Class]
       # @return [Array<Integer>]
-      def ids_from_enumablable(*args)
+      def ids_from_enumbler(*args)
         args.flatten.compact.uniq.map do |arg|
           err = "Unable to find a #{@enumbled_model}#enumble with #{arg}"
 

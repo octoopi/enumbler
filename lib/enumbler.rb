@@ -82,7 +82,7 @@ module Enumbler
 
       cmethod = scope_prefix.blank? ? model_name : "#{scope_prefix}_#{model_name}"
       define_singleton_method(cmethod) do |*args|
-        where(column_name => enumbled_model.ids_from_enumablable(args))
+        where(column_name => enumbled_model.ids_from_enumbler(args))
       end
 
       enumbled_model.enumbles.each do |enumble|
