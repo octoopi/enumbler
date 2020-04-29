@@ -130,12 +130,14 @@ RSpec.describe Enumbler do
 
   describe '.ids_from_enumbler', :seed do
     it 'returns a numeric id' do
+      expect(Color.id_from_enumbler(1)).to eq 1
       expect(Color.ids_from_enumbler(1)).to contain_exactly(1)
     end
     it 'raises an error when the id is not defined' do
       expect { Color.ids_from_enumbler(100, 1) }.to raise_error(Enumbler::Error, /Unable to find/)
     end
     it 'returns an id from a symbol' do
+      expect(Color.id_from_enumbler(:black)).to eq 1
       expect(Color.ids_from_enumbler(:black)).to contain_exactly(1)
       expect(Color.ids_from_enumbler(:black, :white)).to contain_exactly(1, 2)
     end
