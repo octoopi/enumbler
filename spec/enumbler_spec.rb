@@ -110,25 +110,25 @@ RSpec.describe Enumbler do
     end
   end
 
-  describe '.ids_from_enumablable', :seed do
+  describe '.ids_from_enumbler', :seed do
     it 'returns a numeric id' do
-      expect(Color.ids_from_enumablable(1)).to contain_exactly(1)
+      expect(Color.ids_from_enumbler(1)).to contain_exactly(1)
     end
     it 'raises an error when the id is not defined' do
-      expect { Color.ids_from_enumablable(100, 1) }.to raise_error(Enumbler::Error, /Unable to find/)
+      expect { Color.ids_from_enumbler(100, 1) }.to raise_error(Enumbler::Error, /Unable to find/)
     end
     it 'returns an id from a symbol' do
-      expect(Color.ids_from_enumablable(:black)).to contain_exactly(1)
-      expect(Color.ids_from_enumablable(:black, :white)).to contain_exactly(1, 2)
+      expect(Color.ids_from_enumbler(:black)).to contain_exactly(1)
+      expect(Color.ids_from_enumbler(:black, :white)).to contain_exactly(1, 2)
     end
     it 'raises an error when the symbol cannot be found' do
-      expect { Color.ids_from_enumablable(:Bob) }.to raise_error(Enumbler::Error, /Unable to find/)
+      expect { Color.ids_from_enumbler(:Bob) }.to raise_error(Enumbler::Error, /Unable to find/)
     end
     it 'returns an id from a instance' do
-      expect(Color.ids_from_enumablable(Color.black)).to contain_exactly(1)
+      expect(Color.ids_from_enumbler(Color.black)).to contain_exactly(1)
     end
     it 'raises an error when the symbol cannot be found' do
-      expect { Color.ids_from_enumablable(Color.new(id: 100, label: 'ok')) }
+      expect { Color.ids_from_enumbler(Color.new(id: 100, label: 'ok')) }
         .to raise_error(Enumbler::Error, /Unable to find/)
     end
   end
