@@ -21,6 +21,9 @@ Lint/RaiseException:
 Lint/StructNewOverride:
   Enabled: true
 
+Style/Documentation:
+  Enabled: false
+
 Style/HashEachMethods:
   Enabled: true
 
@@ -38,20 +41,5 @@ Style/TrailingCommaInArrayLiteral:
   Enabled: true
   EnforcedStyleForMultiline: consistent_comma
 
-Metrics/BlockLength:
+Metrics:
   Enabled: false
-
-Metrics/AbcSize:
-  Enabled: false
-
-Metrics/CyclomaticComplexity:
-  Enabled: false
-
-Metrics/MethodLength:
-  Max: 30
-
-Metrics/ModuleLength:
-  Max: 300
-
-Metrics/ClassLength:
-  Max: 300

@@ -72,9 +72,24 @@ module Enumbler
         @enumbles << enumble
       end
 
-      # Return the record id(s) based on different argument types.  Can accept an
-      # Integer, a Symbol, or an instance of Enumbled model.  This lookup is a
-      # databse-free lookup.
+      # Return the record id for a given argument.  Can accept an Integer, a
+      # Symbol, or an instance of Enumbled model.  This lookup is a database-free
+      # lookup.
+      #
+      #   Color.id_from_enumbler(1) # => 1
+      #   Color.id_from_enumbler(:black) # => 1
+      #   Color.id_from_enumbler(Color.black) # => 1
+      #
+      # @raise [Error] when there is no enumble to be found
+      # @param arg [Integer, Symbol, Class]
+      # @return [Integer]
+      def id_from_enumbler(arg)
+        ids_from_enumbler(arg).first
+      end
+
+      # Return the record id(s) based on different argument types.  Can accept
+      # an Integer, a Symbol, or an instance of Enumbled model.  This lookup is
+      # a database-free lookup.
       #
       #   Color.ids_from_enumbler(1, 2) # => [1, 2]
       #   Color.ids_from_enumbler(:black, :white) # => [1, 2]
