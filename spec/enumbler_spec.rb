@@ -177,7 +177,7 @@ RSpec.describe Enumbler do
     end
   end
 
-  describe '.seed_the_enumbler', :seed do
+  describe '.seed_the_enumbler!', :seed do
     it 'uses a custom label' do
       expect(Color.infinity.label).to eq 'This is a made-up color'
     end
@@ -190,6 +190,21 @@ RSpec.describe Enumbler do
       expect(Color.pink).to eq Color.find(8)
       expect(Color.find_by(id: 5)).to be_nil
       Color.enumbles.pop
+    end
+  end
+
+  describe '.seed_the_enumbler', :seed do
+    context 'when delete_missing_records is false' do
+      it 'updates but does not delete the records' do
+        Color.enumble :pink, 8
+
+        kept = Color.create!(id: 5, label: 'this is to be kept but not enumbled')
+        Color.seed_the_enumbler(delete_missing_records: false)
+
+        expect(Color.pink).to eq Color.find(8)
+        expect(Color.find_by(id: 5)).to eq kept
+        Color.enumbles.pop
+      end
     end
   end
 end
