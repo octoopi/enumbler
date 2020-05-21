@@ -3,12 +3,13 @@
 module Enumbler
   # Class that holds each row of Enumble data.
   class Enumble
-    attr_reader :id, :enum, :label, :options
+    attr_reader :id, :enum, :label, :label_column_name, :options
 
-    def initialize(enum, id, label: nil, **options)
+    def initialize(enum, id, label: nil, label_column_name: :label, **options)
       @id = id
       @enum = enum
       @label = label || enum.to_s.dasherize
+      @label_column_name = label_column_name
       @options = options
     end
 
@@ -20,7 +21,7 @@ module Enumbler
     def attributes
       {
         id: id,
-        label: label,
+        label_column_name => label,
       }
     end
 
