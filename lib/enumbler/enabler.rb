@@ -34,7 +34,7 @@ module Enumbler
       #
       #   # in your migration
       #   create_table :colors, force: true do |t|
-      #     t.string :label, null: false
+      #     t.string :label, null: false, index: { unique: true }
       #   end
       #
       #   class Color < ApplicationRecord
@@ -60,8 +60,9 @@ module Enumbler
       def enumble(enum, id, label: nil, **options)
         @enumbles ||= []
         @enumbled_model = self
+        @enumbler_label_column_name ||= :label
 
-        enumble = Enumble.new(enum, id, label: label, **options)
+        enumble = Enumble.new(enum, id, label: label, label_column_name: @enumbler_label_column_name, **options)
 
         if @enumbles.include?(enumble)
           raise Error, "You cannot add the same Enumble twice! Attempted to add: #{enum}, #{id}."
@@ -70,6 +71,30 @@ module Enumbler
         define_dynamic_methods_and_constants_for_enumbled_model(enum, id)
 
         @enumbles << enumble
+      end
+
+      # By default, the Enumbler is expecting a table with an underlying column
+      # named `label` that represents the enum in the database.  You can change
+      # this by calling `enumber_label_column_name` before you `enumble`!
+      #
+      #   ActiveRecord::Schema.define do
+      #     create_table :feelings, force: true do |t|
+      #       t.string :emotion, null: false, index: { unique: true }
+      #     end
+      #   end
+      #
+      #   class Feeling < ApplicationRecord
+      #     # @!parse extend Enumbler::Enabler::ClassMethods
+      #     include Enumbler::Enabler
+      #
+      #     enumbler_label_column_name :emotion
+      #
+      #     enumble :sad, 1
+      #     enumble :happy, 2
+      #     enumble :verklempt, 3, label: 'overcome with emotion'
+      #   end
+      def enumbler_label_column_name(label_column_name)
+        @enumbler_label_column_name = label_column_name
       end
 
       # Return the record id for a given argument.  Can accept an Integer, a

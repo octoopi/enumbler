@@ -2,15 +2,30 @@
 
 `Enums` are terrific, but they lack integrity.  Enumbler! The _enum enabler_!  The goal is to allow one to maintain a true foreign_key database driven relationship that also behaves a little bit like an `enum`.  Best of both worlds?  We hope so.
 
+## Installation
 
-## Example
+Add this line to your application's Gemfile:
+
+```ruby
+gem 'enumbler'
+```
+
+And then execute:
+
+    $ bundle install
+
+Or install it yourself as:
+
+    $ gem install enumbler
+
+## Usage
 
 Suppose you have a `House` and you want to add some `colors` to the house.  You are tempted to use an `enum` but the `Enumbler` is calling!
 
 ```ruby
 ActiveRecord::Schema.define do
   create_table :colors|t|
-    t.string :label, null: false
+    t.string :label, null: false, index: { unique: true }
   end
 
   create_table :houses|t|
@@ -52,25 +67,28 @@ house.not_black?
 House.color(:black) # => [house]
 ```
 
-## Installation
+### Use a column other than `label`
 
-Add this line to your application's Gemfile:
+By default, the Enumbler expects a table in the database with a column `label`.  However, you can change this to another underlying column name.  Note that the enumbler still treats it as a `label` column; however it will be saved to the correct place in the database.
 
 ```ruby
-gem 'enumbler'
+ActiveRecord::Schema.define do
+  create_table :feelings, force: true do |t|
+    t.string :emotion, null: false, index: { unique: true }
+  end
+end
+
+class Feeling < ApplicationRecord
+  # @!parse extend Enumbler::Enabler::ClassMethods
+  include Enumbler::Enabler
+
+  enumbler_label_column_name :emotion
+
+  enumble :sad, 1
+  enumble :happy, 2
+  enumble :verklempt, 3, label: 'overcome with emotion'
+end
 ```
-
-And then execute:
-
-    $ bundle install
-
-Or install it yourself as:
-
-    $ gem install enumbler
-
-## Usage
-
-TODO: Write usage instructions here
 
 ## Development
 
