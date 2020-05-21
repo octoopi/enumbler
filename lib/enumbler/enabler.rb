@@ -144,18 +144,27 @@ module Enumbler
         end
       end
 
-      # Seeds the database with the Enumble data.
+      # Seeds the database with the Enumbler data.
       # @param delete_missing_records [Boolean] remove any records that are no
       #   longer defined (default: false)
       def seed_the_enumbler(delete_missing_records: false)
         max_database_id = all.order('id desc').take&.id || 0
         max_enumble_id = enumbles.map(&:id).max
 
-        max_id = max_enumble_id > max_database_id ? max_enumble_id : max_database_id
+        # If we are not deleting records, we just need to update each listed
+        # enumble and skip anything else in the database.  If we are deleting
+        # records, we need to know the max database id.
+        iterator = if !delete_missing_records
+                     @enumbles.map(&:id)
+                   elsif max_enumble_id > max_database_id
+                     (1..max_enumble_id)
+                   else
+                     (1..max_database_id)
+                   end
 
         discarded_ids = []
 
-        (1..max_id).each do |id|
+        iterator.each do |id|
           enumble = @enumbles.find { |e| e.id == id }
 
           if enumble.nil?
