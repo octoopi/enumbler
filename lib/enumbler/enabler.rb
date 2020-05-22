@@ -147,7 +147,8 @@ module Enumbler
       # Seeds the database with the Enumbler data.
       # @param delete_missing_records [Boolean] remove any records that are no
       #   longer defined (default: false)
-      def seed_the_enumbler(delete_missing_records: false)
+      # @param validate [Boolean] validate on save?
+      def seed_the_enumbler(delete_missing_records: false, validate: true)
         max_database_id = all.order('id desc').take&.id || 0
         max_enumble_id = enumbles.map(&:id).max
 
@@ -174,7 +175,7 @@ module Enumbler
 
           record = find_or_initialize_by(id: id)
           record.attributes = enumble.attributes
-          record.save!
+          record.save!(validate: validate)
         end
 
         where(id: discarded_ids).delete_all if delete_missing_records
@@ -182,8 +183,9 @@ module Enumbler
 
       # Seeds the database with the Enumble data, removing any records that are no
       # longer defined.
-      def seed_the_enumbler!
-        seed_the_enumbler(delete_missing_records: true)
+      # @param validate [Boolean] validate on save?
+      def seed_the_enumbler!(validate: true)
+        seed_the_enumbler(delete_missing_records: true, validate: validate)
       end
 
       private
