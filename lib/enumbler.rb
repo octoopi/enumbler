@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'enumbler/collection'
 require 'enumbler/enumble'
 require 'enumbler/enabler'
 require 'enumbler/version'

@@ -65,7 +65,7 @@ RSpec.describe Enumbler do
     expect(Enumbler::VERSION).not_to be nil
   end
 
-  describe '#to_sym', :seed do
+  describe '#enum', :seed do
     it 'returns its own enum symbol' do
       expect(Color.black.enumble.enum).to eq :black
     end
@@ -87,6 +87,15 @@ RSpec.describe Enumbler do
       expect(Color.black.is_black).to be true
       expect(Color.white).to be_not_black
     end
+
+    it 'adds a magic argument to the singleton method', :seed do
+      expect(Color.infinity(:enum)).to eq :infinity
+      expect(Color.infinity(:id)).to eq Color::INFINITY
+      expect(Color.infinity(:label)).to eq Color.infinity.label
+      expect(Color.infinity(:graphql_enum)).to eq 'INFINITY'
+
+      expect { Color.infinity(:oh_my) }.to raise_error(Enumbler::Error, /not supported/)
+    end
   end
 
   describe '.enumbled_to', :seed do
@@ -101,8 +110,9 @@ RSpec.describe Enumbler do
     context 'when adding adds searchable scoped class method' do
       it 'queries based on the enumbler' do
         house = House.create! color: Color.black
+        house2 = House.create! color: Color.white
         expect(House.color(1)).to contain_exactly(house)
-        expect(House.color(:black)).to contain_exactly(house)
+        expect(House.color(:black, :white)).to contain_exactly(house, house2)
         expect(House.color(Color.black)).to contain_exactly(house)
       end
       it 'raises an error when the Enumble is not defined' do
@@ -196,12 +206,12 @@ RSpec.describe Enumbler do
   describe '.seed_the_enumbler', :seed do
     context 'when delete_missing_records is false' do
       it 'updates but does not delete the records' do
-        Color.enumble :pink, 8
+        Color.enumble :maroon, 8
 
         kept = Color.create!(id: 5, label: 'this is to be kept but not enumbled')
         Color.seed_the_enumbler(delete_missing_records: false)
 
-        expect(Color.pink).to eq Color.find(8)
+        expect(Color.maroon).to eq Color.find(8)
         expect(Color.find_by(id: 5)).to eq kept
         Color.enumbles.pop
       end

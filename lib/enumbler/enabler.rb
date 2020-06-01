@@ -58,7 +58,7 @@ module Enumbler
       # @param **options [Hash] optional: additional attributes and values that
       #   will be saved to the database for this enumble record
       def enumble(enum, id, label: nil, **options)
-        @enumbles ||= []
+        @enumbles ||= Enumbler::Collection.new
         @enumbled_model = self
         @enumbler_label_column_name ||= :label
 
@@ -68,7 +68,7 @@ module Enumbler
           raise Error, "You cannot add the same Enumble twice! Attempted to add: #{enum}, #{id}."
         end
 
-        define_dynamic_methods_and_constants_for_enumbled_model(enum, id)
+        define_dynamic_methods_and_constants_for_enumbled_model(enumble)
 
         @enumbles << enumble
       end
@@ -190,16 +190,22 @@ module Enumbler
 
       private
 
-      def define_dynamic_methods_and_constants_for_enumbled_model(enum, id)
-        method_name = "#{enum}?"
-        not_method_name = "not_#{enum}?"
-        alias_method_name = "is_#{enum}"
+      def define_dynamic_methods_and_constants_for_enumbled_model(enumble)
+        method_name = "#{enumble.enum}?"
+        not_method_name = "not_#{enumble.enum}?"
+        alias_method_name = "is_#{enumble.enum}"
 
-        const_set(enum.to_s.upcase, id)
-        define_method(method_name) { self.id == id }
-        define_method(not_method_name) { self.id != id }
+        const_set(enumble.enum.to_s.upcase, enumble.id)
+        define_method(method_name) { id == enumble.id }
+        define_method(not_method_name) { id != enumble.id }
         alias_method alias_method_name, method_name
-        define_singleton_method(enum) { find(id) }
+        define_singleton_method(enumble.enum) do |attr = nil|
+          return find(enumble.id) if attr.nil?
+
+          enumble.send(attr)
+        rescue NoMethodError
+          raise Enumbler::Error, "The attribute #{attr} is not supported on this Enumble."
+        end
       end
     end
   end
