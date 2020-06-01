@@ -54,17 +54,23 @@ class House < ApplicationRecord
 end
 
 # This gives you some power:
-Color::BLACK           # => 1
-Color.black            # => equivalent to Color.find(1)
-Color.black.black?     # => true
-Color.black.is_black   # => true
-Color.white.not_black? # => true
+Color::BLACK               # => 1
+Color.black                # => equivalent to Color.find(1)
+Color.black.black?         # => true
+Color.black.is_black       # => true
+Color.white.not_black?     # => true
+
+Color.black(:id)           # => 1
+Color.black(:enum)         # => :black
+Color.black(:label)        # => 'black'
+Color.black(:graphql_enum) # => 'BLACK'
 
 house = House.create!(color: Color.black)
 house.black?
 house.not_black?
 
-House.color(:black) # => [house]
+house2 = House.create!(color: Color.white)
+House.color(:black, :white) # => [house, house2]
 ```
 
 ### Use a column other than `label`
@@ -98,7 +104,8 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Roadmap
 
-Ideally, we could make this work more like a traditional `enum`; for example, overriding the `.where` method by allowing something like: `House.where(color: :blue)` instead of `House.where_color(:blue)`.  But right now am in a rush and not sure how to go about doing that properly.
+* We need to add in support for additional attributes/columns in the enumbled table.  For example, following the `Color` concept, we may want to have a column which is `hex` and stores the colors `hex` value (e.g., `FFFFFF`).  This should be supported.
+* Ideally, we could make this work more like a traditional `enum`; for example, overriding the `.where` method by allowing something like: `House.where(color: :blue)` instead of `House.where_color(:blue)`.  But right now am in a rush and not sure how to go about doing that properly.
 
 ## Contributing
 

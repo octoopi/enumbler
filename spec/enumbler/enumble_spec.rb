@@ -38,4 +38,11 @@ RSpec.describe Enumbler::Enumble do
       expect(e1.label).to eq 'blue-bonnet'
     end
   end
+
+  describe '#graphql_enum' do
+    it 'returns a grapqhl standard  a dasherized label' do
+      e1 = described_class.new(:blue_bonnet, 1)
+      expect(e1.graphql_enum).to eq 'BLUE_BONNET'
+    end
+  end
 end
