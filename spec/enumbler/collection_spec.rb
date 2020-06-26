@@ -8,10 +8,6 @@ RSpec.describe Enumbler::Collection do
     ec << e1
     ec << e2
 
-    puts '--------------------------------[ DEBUG ]---------------------------------------'
-    puts e2
-    puts '--------------------------------------------------------------------------------'
-
     expect(ec.blue_bonnet).to eq e1
     expect(ec.pink_hat).to eq e2
     expect { ec.oh_my }.to raise_error(NoMethodError)
