@@ -28,6 +28,16 @@ module Enumbler
       }
     end
 
+    # Used to return itself from a class method.
+    #
+    # ```
+    # Color.black(:enumble) #=> <Enumble:0x00007fb4396a78c8>
+    # ```
+    # @return [Enumbler::Enumble]
+    def enumble
+      self
+    end
+
     def eql?(other)
       other.class == self.class &&
         (other.id == id || other.enum == enum || other.label == label)

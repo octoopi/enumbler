@@ -97,6 +97,93 @@ module Enumbler
         @enumbler_label_column_name = label_column_name
       end
 
+      # See {.find_enumbles}.  Simply returns the first object.  Use when you
+      # want one argument to be found and not returned in an array.
+      # @raise [Error] when there is no [Enumbler::Enumble] to be found and
+      #   `raise_error: true`
+      # @param args [Integer, String, Symbol]
+      # @param case_sensitive [Boolean] should a String search be case sensitive
+      #   (default: false)
+      # @param raise_error [Boolean] raise an error if not found (default:
+      #   false)
+      # @return [Enumbler::Enumble]
+      def find_enumble(arg, case_sensitive: false, raise_error: false)
+        find_enumbles(arg, case_sensitive: case_sensitive, raise_error: raise_error).first
+      end
+
+      # See {.find_enumbles}.  Simply returns the first object.  Use when you
+      # want one argument to be found and not returned in an array. Raises error
+      # if none found.
+      # @raise [Error] when there is no [Enumbler::Enumble] to be found and
+      #   `raise_error: true`
+      # @param args [Integer, String, Symbol]
+      # @param case_sensitive [Boolean] should a String search be case sensitive
+      #   (default: false)
+      # @return [Enumbler::Enumble]
+      def find_enumble!(arg, case_sensitive: false)
+        find_enumbles(arg, case_sensitive: case_sensitive, raise_error: true).first
+      end
+
+      # Finds an array of {Enumbler::Enumble} objects matching the given
+      # argument. Accepts an Integer, String, Symbol, or ActiveRecord instance.
+      #
+      # This method is designed to let you get information about the record
+      # without having to hit the database.  Returns `nil` when none found
+      # unless `raise_error` is `true`.
+      #
+      #    Color.find_enumbles(:black, 'white', 'not-found')
+      #      #=> [Enumbler::Enumble<:black>, Enumbler::Enumble<:white>, nil]
+      #
+      # @raise [Error] when there is no [Enumbler::Enumble] to be found and
+      #   `raise_error: true`
+      # @param args [Integer, String, Symbol]
+      # @param case_sensitive [Boolean] should a String search be case sensitive
+      #   (default: false)
+      # @param raise_error [Boolean] raise an error if not found (default:
+      #   false)
+      # @return [Array<Enumbler::Enumble>]
+      def find_enumbles(*args, case_sensitive: false, raise_error: false)
+        args.flatten.compact.uniq.map do |arg|
+          err = "Unable to find a #{@enumbled_model}#enumble with #{arg}"
+
+          begin
+            arg = Integer(arg) # raises Type error if not a real integer
+            enumble = @enumbled_model.enumbles.find { |e| e.id == arg }
+          rescue TypeError, ArgumentError
+            enumble =
+              if arg.is_a?(Symbol)
+                @enumbled_model.enumbles.find { |e| e.enum == arg }
+              elsif arg.is_a?(String)
+                @enumbled_model.enumbles.find do |e|
+                  case_sensitive ? e.label == arg : arg.casecmp?(e.label)
+                end
+              elsif arg.instance_of?(@enumbled_model)
+                arg.enumble
+              end
+          end
+
+          if enumble.present?
+            enumble
+          else
+            raise Error if raise_error
+
+            nil
+          end
+        rescue Error
+          raise Error, err
+        end
+      end
+
+      # See {.find_enumbles}.  Same method, only raises error when none found.
+      # @raise [Error] when there is no [Enumbler::Enumble] to be found
+      # @param args [Integer, String, Symbol]
+      # @param case_sensitive [Boolean] should a String search be case sensitive
+      #   (default: false)
+      # @return [Array<Enumbler::Enumble>]
+      def find_enumbles!(*args, case_sensitive: false)
+        find_enumbles(*args, case_sensitive: case_sensitive, raise_error: true)
+      end
+
       # Return the record id for a given argument.  Can accept an Integer, a
       # Symbol, or an instance of Enumbled model.  This lookup is a database-free
       # lookup.
@@ -107,9 +194,25 @@ module Enumbler
       #
       # @raise [Error] when there is no enumble to be found
       # @param arg [Integer, Symbol, Class]
+      # @param case_sensitive [Boolean] should a string search be performed with
+      #   case sensitivity (default: false)
+      # @param raise_error [Boolean] raise an error if not found (default:
+      #   false)
       # @return [Integer]
-      def id_from_enumbler(arg)
-        ids_from_enumbler(arg).first
+      def id_from_enumbler(arg, case_sensitive: false, raise_error: false)
+        ids_from_enumbler(arg, case_sensitive: case_sensitive, raise_error: raise_error).first
+      end
+
+      # See {.ids_from_enumbler}.  Raises error if none found.
+      # @raise [Error] when there is no enumble to be found
+      # @param arg [Integer, Symbol, Class]
+      # @param case_sensitive [Boolean] should a string search be performed with
+      #   case sensitivity (default: false)
+      # @param raise_error [Boolean] raise an error if not found (default:
+      #   false)
+      # @return [Integer]
+      def id_from_enumbler!(arg, case_sensitive: false)
+        ids_from_enumbler(arg, case_sensitive: case_sensitive, raise_error: true).first
       end
 
       # Return the record id(s) based on different argument types.  Can accept
@@ -118,30 +221,30 @@ module Enumbler
       #
       #   Color.ids_from_enumbler(1, 2) # => [1, 2]
       #   Color.ids_from_enumbler(:black, :white) # => [1, 2]
+      #   Color.ids_from_enumbler('black', :white) # => [1, 2]
       #   Color.ids_from_enumbler(Color.black, Color.white) # => [1, 2]
       #
       # @raise [Error] when there is no enumble to be found
       # @param *args [Integer, Symbol, Class]
+      # @param case_sensitive [Boolean] should a string search be performed with
+      #   case sensitivity (default: false)
+      # @param raise_error [Boolean] raise an error if not found (default:
+      #   false)
       # @return [Array<Integer>]
-      def ids_from_enumbler(*args)
-        args.flatten.compact.uniq.map do |arg|
-          err = "Unable to find a #{@enumbled_model}#enumble with #{arg}"
+      def ids_from_enumbler(*args, case_sensitive: false, raise_error: false)
+        enumbles = find_enumbles(*args, case_sensitive: case_sensitive, raise_error: raise_error)
+        enumbles.map { |e| e&.id }
+      end
 
-          begin
-            arg = Integer(arg) # raises Type error if not a real integer
-            enumble = @enumbled_model.enumbles.find { |e| e.id == arg }
-          rescue TypeError
-            enumble = if arg.is_a?(Symbol)
-                        @enumbled_model.enumbles.find { |e| e.enum == arg }
-                      elsif arg.instance_of?(@enumbled_model)
-                        arg.enumble
-                      end
-          end
-
-          enumble&.id || raise(Error, err)
-        rescue Error
-          raise Error, err
-        end
+      # See {.ids_from_enumbler}.  Raises error when none found.
+      # @raise [Error] when there is no enumble to be found
+      # @param *args [Integer, Symbol, Class]
+      # @param case_sensitive [Boolean] should a string search be performed with
+      #   case sensitivity (default: false)
+      # @return [Array<Integer>]
+      def ids_from_enumbler!(*args, case_sensitive: false)
+        enumbles = find_enumbles!(*args, case_sensitive: case_sensitive)
+        enumbles.map(&:id)
       end
 
       # Seeds the database with the Enumbler data.
@@ -150,7 +253,7 @@ module Enumbler
       # @param validate [Boolean] validate on save?
       def seed_the_enumbler(delete_missing_records: false, validate: true)
         max_database_id = all.order('id desc').take&.id || 0
-        max_enumble_id = enumbles.map(&:id).max
+        max_enumble_id = @enumbles.map(&:id).max
 
         # If we are not deleting records, we just need to update each listed
         # enumble and skip anything else in the database.  If we are deleting

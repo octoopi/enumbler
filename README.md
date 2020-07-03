@@ -60,17 +60,39 @@ Color.black.black?         # => true
 Color.black.is_black       # => true
 Color.white.not_black?     # => true
 
+# Get attributes without hitting the database
 Color.black(:id)           # => 1
 Color.black(:enum)         # => :black
 Color.black(:label)        # => 'black'
 Color.black(:graphql_enum) # => 'BLACK'
+
+# Get an Enumble object from an id, label, enum, or ActiveRecord model
+Color.find_enumbles(:black, 'white') # => [Enumbler::Enumble<:black>, Enumbler::Enumble<:white>]
+Color.find_enumbles(:black, 'does-not-exist') # => [Enumbler::Enumble<:black>, nil]
+
+Color.find_enumble(:black) # => Enumbler::Enumble<:black>
+
+# raises errors if none found
+Color.find_enumbles!!(:black, 'does-no-exist') # => raises Enumbler::Error
+Color.find_enumble!(:does_not_exist) # => raises Enumbler::Error
+
+# Get ids flexibly, without raising an error if none found
+Color.ids_from_enumbler(:black, 'white') # => [1, 2]
+Color.ids_from_enumbler(:black, 'does-no-exist') # => [1, nil]
+
+# Raise an error if none found
+Color.ids_from_enumbler!(:black, 'does-no-exist') # => raises Enumbler::Error
+Color.id_from_enumbler!(:does_not_exist) # => raises Enumbler::Error
+
+# Get enumble object by id
 
 house = House.create!(color: Color.black)
 house.black?
 house.not_black?
 
 house2 = House.create!(color: Color.white)
-House.color(:black, :white) # => [house, house2]
+House.color(:black, :white)      # => ActiveRecord::Relation<house, house2>
+House.color(Color.black, :white) # => ActiveRecord::Relation<house, house2>
 ```
 
 ### Use a column other than `label`
