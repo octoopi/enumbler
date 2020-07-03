@@ -86,6 +86,10 @@ module Enumbler
         where(column_name => enumbled_model.ids_from_enumbler(args))
       end
 
+      define_singleton_method("#{cmethod}!") do |*args|
+        where(column_name => enumbled_model.ids_from_enumbler!(args))
+      end
+
       enumbled_model.enumbles.each do |enumble|
         method_name = prefix ? "#{model_name}_#{enumble.enum}?" : "#{enumble.enum}?"
         not_method_name = prefix ? "#{model_name}_not_#{enumble.enum}?" : "not_#{enumble.enum}?"
