@@ -40,8 +40,8 @@ module Enumbler
       #   class Color < ApplicationRecord
       #     include Enumbler::Enabler
       #
-      #     enumble :black, 1
-      #     enumble :white, 2
+      #     enumble :black, 1, hex: '000000'
+      #     enumble :white, 2, hex: 'ffffff'
       #     enumble :dark_brown, 3, # label: 'dark-brown'
       #     enumble :black_hole, 3, label: 'Oh my! It is a black hole!'
       #   end
@@ -55,14 +55,16 @@ module Enumbler
       # @param enum [Symbol] the enum representation
       # @param id [Integer] the primary key value
       # @param label [String] optional: label for humans
-      # @param **options [Hash] optional: additional attributes and values that
+      # @param **attributes [Hash] optional: additional attributes and values that
       #   will be saved to the database for this enumble record
-      def enumble(enum, id, label: nil, **options)
+      def enumble(enum, id, label: nil, **attributes)
         @enumbles ||= Enumbler::Collection.new
         @enumbled_model = self
         @enumbler_label_column_name ||= :label
 
-        enumble = Enumble.new(enum, id, label: label, label_column_name: @enumbler_label_column_name, **options)
+        raise_error_if_model_does_not_support_attributes(attributes)
+
+        enumble = Enumble.new(enum, id, label: label, label_column_name: @enumbler_label_column_name, **attributes)
 
         if @enumbles.include?(enumble)
           raise Error, "You cannot add the same Enumble twice! Attempted to add: #{enum}, #{id}."
@@ -309,6 +311,17 @@ module Enumbler
         rescue NoMethodError
           raise Enumbler::Error, "The attribute #{attr} is not supported on this Enumble."
         end
+      end
+
+      def raise_error_if_model_does_not_support_attributes(attributes)
+        return if attributes.blank?
+
+        unsupported_attrs = attributes.reject { |key, _value| has_attribute?(key) }
+
+        return if unsupported_attrs.blank?
+
+        raise Enumbler::Error,
+          "The model #{self} does not support the attribute(s): #{unsupported_attrs.keys.map(&:to_s).to_sentence}"
       end
     end
   end

@@ -26,6 +26,7 @@ Suppose you have a `House` and you want to add some `colors` to the house.  You 
 ActiveRecord::Schema.define do
   create_table :colors|t|
     t.string :label, null: false, index: { unique: true }
+    t.string :hex, null: true
   end
 
   create_table :houses|t|
@@ -42,8 +43,8 @@ end
 class Color < ApplicationRecord
   include Enumbler::Enabler
 
-  enumble :black, 1
-  enumble :white, 2
+  enumble :black, 1, hex: '000000'
+  enumble :white, 2, hex: 'ffffff'
   enumble :dark_brown, 3
   enumble :infinity, 4, label: 'Infinity - and beyond!'
 end
