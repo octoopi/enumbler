@@ -6,6 +6,7 @@
 ActiveRecord::Schema.define do
   create_table :colors, force: true do |t|
     t.string :label, null: false, index: { unique: true }
+    t.string :hex, null: true
   end
 
   create_table :feelings, force: true do |t|
@@ -29,8 +30,8 @@ class Color < ApplicationRecord
   # @!parse extend Enumbler::Enabler::ClassMethods
   include Enumbler::Enabler
 
-  enumble :black, 1
-  enumble :white, 2
+  enumble :black, 1, hex: '000000'
+  enumble :white, 2, hex: 'ffffff'
   enumble :dark_brown, 3
   enumble :infinity, 4, label: 'This is a made-up color'
 end
@@ -82,6 +83,11 @@ RSpec.describe Enumbler do
     it 'creates the class finder methods', :seed do
       expect(Color.black).to eq Color.find(Color::BLACK)
     end
+
+    it 'raises an error when attempting to add an attribute that is not supported' do
+      expect { Color.enumble(:pink, 8, bob: 'the builder') }.to raise_error(Enumbler::Error, /not support/)
+    end
+
     it 'creates the query methods', :seed do
       expect(Color.black).to be_black
       expect(Color.black.is_black).to be true
@@ -238,6 +244,12 @@ RSpec.describe Enumbler do
     it 'uses a custom label' do
       expect(Color.infinity.label).to eq 'This is a made-up color'
     end
+
+    it 'includes additional attributes' do
+      expect(Color.black.hex).to eq '000000'
+      expect(Color.white.hex).to eq 'ffffff'
+    end
+
     it 'updates the records' do
       Color.enumble :pink, 8
 

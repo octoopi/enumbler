@@ -2,18 +2,15 @@
 
 module Enumbler
   # Class that holds each row of Enumble data.
-  #
-  # @todo We need to support additional options/attributes beyond the id/label
-  #   pairs.  Is on the backburner for a moment.
   class Enumble
-    attr_reader :id, :enum, :label, :label_column_name, :options
+    attr_reader :id, :enum, :label, :label_column_name
 
-    def initialize(enum, id, label: nil, label_column_name: :label, **options)
+    def initialize(enum, id, label: nil, label_column_name: :label, **attributes)
       @id = id
       @enum = enum
       @label = label || enum.to_s.dasherize
       @label_column_name = label_column_name
-      @options = options
+      @additional_attributes = attributes || {}
     end
 
     def ==(other)
@@ -22,10 +19,10 @@ module Enumbler
     end
 
     def attributes
-      {
+      @additional_attributes.merge({
         id: id,
         label_column_name => label,
-      }
+      })
     end
 
     # Used to return itself from a class method.
