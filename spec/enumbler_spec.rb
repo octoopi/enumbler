@@ -52,6 +52,11 @@ class House < ApplicationRecord
   enumbled_to :color
 end
 
+class ModelWithoutTable < ApplicationRecord
+  include Enumbler::Enabler
+  enumble :without_hope, 1
+end
+
 # -----------------------------------------------------------------------------
 # Here are the expectations.  Note that `Color.seed_the_enumbler!` needs to be
 # run to seed the database.  We are using transactions here so we need to run it
@@ -101,6 +106,13 @@ RSpec.describe Enumbler do
       expect(Color.infinity(:graphql_enum)).to eq 'INFINITY'
 
       expect { Color.infinity(:oh_my) }.to raise_error(Enumbler::Error, /not supported/)
+    end
+
+    context 'when the table for the model does not yet exist' do
+      it 'does not raise any errors' do
+        expect(ModelWithoutTable).to receive(:warn).with(/pending migration/)
+        ModelWithoutTable.enumble(:test, 2, bob: 'ok')
+      end
     end
   end
 

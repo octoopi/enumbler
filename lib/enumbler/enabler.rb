@@ -322,6 +322,9 @@ module Enumbler
 
         raise Enumbler::Error,
           "The model #{self} does not support the attribute(s): #{unsupported_attrs.keys.map(&:to_s).to_sentence}"
+      rescue ActiveRecord::StatementInvalid
+        warn "[Enumbler Warning] => Unable to find a table for #{self}."\
+          'This is to be expected if there is a pending migration; however, if there is not then something is amiss.'
       end
     end
   end
