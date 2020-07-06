@@ -163,6 +163,16 @@ RSpec.describe Enumbler do
         expect(house).not_to be_color_not_black
       end
     end
+
+    context 'when adding includes helper methods to find attributes' do
+      it 'adds the attributes' do
+        house = House.create! color: Color.black
+        expect(house.color_label).to eq 'black'
+        expect(house.color_enum).to eq :black
+        expect(house.color_graphql_enum).to eq 'BLACK'
+        expect(house.color_id).to eq Color.black.id
+      end
+    end
   end
 
   describe '.enumbler_label_column_name' do
