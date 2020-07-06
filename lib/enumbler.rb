@@ -65,6 +65,7 @@ module Enumbler
 
       belongs_to(name, scope, **options)
 
+      define_helper_attributes(name)
       define_dynamic_methods_for_enumbled_to_models(enumbled_model, prefix: prefix, scope_prefix: scope_prefix)
     rescue NameError
       raise Error, "The model #{class_name} cannot be found.  Uninitialized constant."
@@ -95,6 +96,17 @@ module Enumbler
         not_method_name = prefix ? "#{model_name}_not_#{enumble.enum}?" : "not_#{enumble.enum}?"
         define_method(method_name) { self[column_name] == enumble.id }
         define_method(not_method_name) { self[column_name] != enumble.id }
+      end
+    end
+
+    # Add the attirbutes:
+    #
+    #   house.color_label #=> 'black'
+    #   house.color_enum  #=> :black
+    #   house.color_graphql_enum #=> 'BLACK'
+    def define_helper_attributes(name)
+      %i[label enum graphql_enum].each do |sym|
+        define_method("#{name}_#{sym}") { send(name).enumble.send(sym) }
       end
     end
   end

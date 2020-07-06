@@ -86,10 +86,14 @@ Color.ids_from_enumbler!(:black, 'does-no-exist') # => raises Enumbler::Error
 Color.id_from_enumbler!(:does_not_exist) # => raises Enumbler::Error
 
 # Get enumble object by id
-
 house = House.create!(color: Color.black)
-house.black?
-house.not_black?
+
+# These are all db-free lookups
+house.color_label        # => 'black'
+house.color_enum         # => :black
+house.color_graphql_enum # => 'BLACK'
+house.black?             # => true
+house.not_black?         # => false
 
 house2 = House.create!(color: Color.white)
 House.color(:black, :white)      # => ActiveRecord::Relation<house, house2>
