@@ -111,6 +111,10 @@ RSpec.describe Enumbler do
       expect { Color.infinity(:oh_my) }.to raise_error(Enumbler::Error, /not supported/)
     end
 
+    it 'uses the label for #to_s', :seed do
+      expect(Color.black.to_s).to eq 'black'
+    end
+
     context 'when the table for the model does not yet exist' do
       it 'does not raise any errors' do
         expect(ModelWithoutTable).to receive(:warn).with(/pending migration/)

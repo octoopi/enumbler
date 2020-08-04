@@ -10,11 +10,20 @@ module Enumbler
     # The Enumble definition that this record defined.
     # @return [Enumbler::Enumble]
     def enumble
-      @enumble = self.class.enumbles.find { |enumble| enumble.id == id }
+      @enumble = self.class.find_enumble(id)
 
       raise Error, 'An enumble is not defined for this record!' if @enumble.nil?
 
       @enumble
+    end
+
+    # The enumble label if it exists.
+    # @return [String]
+    def to_s
+      enumble = self.class.find_enumble(id)
+      return enumble.label if enumble.present?
+
+      super
     end
 
     # These ClassMethods can be included in any model that you wish to
