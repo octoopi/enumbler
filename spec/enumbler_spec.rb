@@ -239,6 +239,7 @@ RSpec.describe Enumbler do
         expect(Color.id_from_enumbler('dark-brown')).to eq 3
         expect(Color.ids_from_enumbler('dark-brown')).to contain_exactly(3)
         expect(Color.ids_from_enumbler('dark-Brown', 'black')).to contain_exactly(1, 3)
+        expect(Color.ids_from_enumbler('dark_brown', 'black')).to contain_exactly(1, 3)
         expect(Color.id_from_enumbler('BlaCk')).to eq 1
       end
     end
@@ -247,6 +248,7 @@ RSpec.describe Enumbler do
       it 'returns an id from a string' do
         expect(Color.ids_from_enumbler('black', case_sensitive: true)).to contain_exactly(1)
         expect(Color.ids_from_enumbler('black', :white, case_sensitive: true)).to contain_exactly(1, 2)
+        expect(Color.ids_from_enumbler('dark_brown', :white, case_sensitive: true)).to contain_exactly(2, 3)
         expect { Color.ids_from_enumbler!('Black', case_sensitive: true) }.to raise_error(Enumbler::Error, /Black/)
         expect(Color.id_from_enumbler('black', case_sensitive: true)).to eq(1)
         expect(Color.id_from_enumbler('black', case_sensitive: true)).to eq(1)

@@ -168,7 +168,11 @@ module Enumbler
                 @enumbled_model.enumbles.find { |e| e.enum == arg }
               elsif arg.is_a?(String)
                 @enumbled_model.enumbles.find do |e|
-                  case_sensitive ? e.label == arg : arg.casecmp?(e.label)
+                  if case_sensitive
+                    [e.label, e.enum.to_s].include?(arg)
+                  else
+                    arg.casecmp?(e.label) || arg.casecmp?(e.enum.to_s)
+                  end
                 end
               elsif arg.instance_of?(@enumbled_model)
                 arg.enumble

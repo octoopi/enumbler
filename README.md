@@ -73,6 +73,9 @@ Color.find_enumbles(:black, 'does-not-exist') # => [Enumbler::Enumble<:black>, n
 
 Color.find_enumble(:black) # => Enumbler::Enumble<:black>
 
+# Is pretty flexible with findidng things from strings
+Color.find_enumble('Dark_Brown') # => Enumbler::Enumble<:dark-brown>
+
 # raises errors if none found
 Color.find_enumbles!!(:black, 'does-no-exist') # => raises Enumbler::Error
 Color.find_enumble!(:does_not_exist) # => raises Enumbler::Error
