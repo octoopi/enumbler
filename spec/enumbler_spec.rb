@@ -16,6 +16,15 @@ ActiveRecord::Schema.define do
   create_table :houses, force: true do |t|
     t.references :color, foreign_key: true, null: false
   end
+
+  create_table :palettes, force: true do |t|
+    t.string :label, null: false, index: { unique: true }
+  end
+
+  create_table :color_palettes, force: true do |t|
+    t.references :color, foreign_key: true, null: false
+    t.references :palette, foreign_key: true, null: false
+  end
 end
 
 class ApplicationRecord < ActiveRecord::Base
@@ -55,6 +64,16 @@ end
 class ModelWithoutTable < ApplicationRecord
   include Enumbler::Enabler
   enumble :without_hope, 1
+end
+
+class ColorPalette < ApplicationRecord
+  belongs_to :palette
+  enumbled_to :color
+end
+
+class Palette < ApplicationRecord
+  has_many :color_palettes
+  has_many :colors, through: :color_palettes
 end
 
 # -----------------------------------------------------------------------------
@@ -120,6 +139,20 @@ RSpec.describe Enumbler do
         expect(ModelWithoutTable).to receive(:warn).with(/pending migration/)
         ModelWithoutTable.enumble(:test, 2, bob: 'ok')
       end
+    end
+
+    it 'queries the collection', :seed do
+      expect(Color.all.any_black?).to be true
+      expect(Color.all.where.not(id: Color::BLACK).any_black?).to be false
+
+      palette = Palette.new(label: 'Greys')
+      palette.colors << Color.black
+      palette.colors << Color.white
+      palette.save!
+
+      expect(palette.colors.size).to eq 2
+      expect(palette.colors.any_black?).to be true
+      expect(palette.colors.any_dark_brown?).to be false
     end
   end
 
