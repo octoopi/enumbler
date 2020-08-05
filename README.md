@@ -61,6 +61,9 @@ Color.black.black?         # => true
 Color.black.is_black       # => true
 Color.white.not_black?     # => true
 
+Color.all.any_black?                         # => true
+Color.where.not(id: Color::BLACK).any_black? # => false
+
 # Get attributes without hitting the database
 Color.black(:id)           # => 1
 Color.black(:enum)         # => :black

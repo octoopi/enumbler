@@ -326,6 +326,12 @@ module Enumbler
         rescue NoMethodError
           raise Enumbler::Error, "The attribute #{attr} is not supported on this Enumble."
         end
+
+        define_singleton_method("any_#{enumble.enum}?") do
+          where(id: enumble.id).exists?
+        rescue NoMethodError
+          raise Enumbler::Error, "The attribute #{attr} is not supported on this Enumble."
+        end
       end
 
       # I accidentally forgot to provide an id one time and it was confusing as
