@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'enumbler/core_ext/symbol/case_equality_operator'
+
 require 'enumbler/collection'
 require 'enumbler/enumble'
 require 'enumbler/enabler'

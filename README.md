@@ -129,6 +129,18 @@ class Feeling < ApplicationRecord
 end
 ```
 
+## Core ext
+
+Adds case equality power to the `Symbol` class allowing you to use case methods directly against an enabled instance:
+
+```ruby
+case Color.black
+when :black
+  'not surprised'
+when :blue, :purple
+  'very surprised'
+end
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.

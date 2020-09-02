@@ -340,4 +340,31 @@ RSpec.describe Enumbler do
       end
     end
   end
+
+  describe 'core_ext/symbol', :seed do
+    def test(enumbled_instance)
+      case enumbled_instance
+      when :black
+        'it is black'
+      when :white, :dark_brown
+        'white or brown'
+      else
+        'nope'
+      end
+    end
+
+    it 'provides a case quality operator' do
+      expect(test(Color.black)).to eq 'it is black'
+      expect(test(Color.dark_brown)).to eq 'white or brown'
+      expect(test(Color.infinity)).to eq 'nope'
+    end
+
+    it 'does not raise an error when the other object is not enabled as an enumbler' do
+      expect { test(Color) }.not_to raise_error
+      expect { test(Color.new) }.not_to raise_error
+
+      expect(test(Color.new)).to eq 'nope'
+      expect(test(Color)).to eq 'nope'
+    end
+  end
 end
