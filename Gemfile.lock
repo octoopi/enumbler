@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    enumbler (0.6.7)
+    enumbler (0.6.8)
       activerecord (>= 5.2.3, < 6.1)
       activesupport (>= 5.2.3, < 6.1)
 
