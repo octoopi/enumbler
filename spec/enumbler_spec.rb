@@ -17,6 +17,10 @@ ActiveRecord::Schema.define do
     t.references :color, foreign_key: true, null: false
   end
 
+  create_table :skies, force: true do |t|
+    t.references :pretty_color, null: false, foreign_key: { to_table: 'colors' }
+  end
+
   create_table :palettes, force: true do |t|
     t.string :label, null: false, index: { unique: true }
   end
@@ -74,6 +78,10 @@ end
 class Palette < ApplicationRecord
   has_many :color_palettes
   has_many :colors, through: :color_palettes
+end
+
+class Sky < ApplicationRecord
+  enumbled_to :pretty_color, class_name: 'Color'
 end
 
 # -----------------------------------------------------------------------------
@@ -164,9 +172,15 @@ RSpec.describe Enumbler do
     it 'raises an error when the class does not exist' do
       expect { House.enumbled_to(:bob) }.to raise_error(Enumbler::Error, /cannot be found/)
     end
+
     it 'raises an error when the class is not enumbled' do
       class_double('MyFriendBob').as_stubbed_const
       expect { House.enumbled_to(:my_friend_bob) }.to raise_error(Enumbler::Error, /not have any enumbles/)
+    end
+
+    it 'uses the `class_name` option when present' do
+      sky = Sky.create!(pretty_color: Color.black)
+      expect(Sky.pretty_color(:black)).to contain_exactly(sky)
     end
 
     context 'when adding adds searchable scoped class method' do
