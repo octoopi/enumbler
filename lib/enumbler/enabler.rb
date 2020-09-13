@@ -26,6 +26,15 @@ module Enumbler
       super
     end
 
+    # The enumble symbol if it exists.
+    # @return [Symbol]
+    def to_sym
+      enumble = self.class.find_enumble(id)
+      return enumble.enum if enumble.present?
+
+      super
+    end
+
     # These ClassMethods can be included in any model that you wish to
     # _Enumble_!
     #
