@@ -57,7 +57,7 @@ module Enumbler
     #   example: `where_by` will make it `House.where_by_color(:black)`
     # @param **options [Hash] additional options passed to `belongs_to`
     def enumbled_to(name, scope = nil, prefix: false, scope_prefix: nil, **options)
-      class_name = name.to_s.classify
+      class_name = options.fetch(:class_name, name.to_s.classify)
       enumbled_model = class_name.constantize
 
       unless enumbled_model.respond_to?(:enumbles)
@@ -68,7 +68,7 @@ module Enumbler
       belongs_to(name, scope, **options)
 
       define_helper_attributes(name)
-      define_dynamic_methods_for_enumbled_to_models(enumbled_model, prefix: prefix, scope_prefix: scope_prefix)
+      define_dynamic_methods_for_enumbled_to_models(name, enumbled_model, prefix: prefix, scope_prefix: scope_prefix)
     rescue NameError
       raise Error, "The model #{class_name} cannot be found.  Uninitialized constant."
     end
@@ -80,11 +80,10 @@ module Enumbler
     # @todo - we should check for naming conflicts!
     #     dangerous_attribute_method?(method_name)
     #     method_defined_within?(method_name, self, Module)
-    def define_dynamic_methods_for_enumbled_to_models(enumbled_model, prefix: false, scope_prefix: nil)
-      model_name = enumbled_model.to_s.underscore
-      column_name = "#{model_name}_id"
+    def define_dynamic_methods_for_enumbled_to_models(name, enumbled_model, prefix: false, scope_prefix: nil)
+      column_name = "#{name}_id"
 
-      cmethod = scope_prefix.blank? ? model_name : "#{scope_prefix}_#{model_name}"
+      cmethod = scope_prefix.blank? ? name : "#{scope_prefix}_#{name}"
       define_singleton_method(cmethod) do |*args|
         where(column_name => enumbled_model.ids_from_enumbler(args))
       end
@@ -94,8 +93,8 @@ module Enumbler
       end
 
       enumbled_model.enumbles.each do |enumble|
-        method_name = prefix ? "#{model_name}_#{enumble.enum}?" : "#{enumble.enum}?"
-        not_method_name = prefix ? "#{model_name}_not_#{enumble.enum}?" : "not_#{enumble.enum}?"
+        method_name = prefix ? "#{name}_#{enumble.enum}?" : "#{enumble.enum}?"
+        not_method_name = prefix ? "#{name}_not_#{enumble.enum}?" : "not_#{enumble.enum}?"
         define_method(method_name) { self[column_name] == enumble.id }
         define_method(not_method_name) { self[column_name] != enumble.id }
       end
