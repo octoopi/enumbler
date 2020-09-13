@@ -134,6 +134,10 @@ RSpec.describe Enumbler do
       expect(Color.black.to_s).to eq 'black'
     end
 
+    it 'uses the enum for #to_sym', :seed do
+      expect(Color.black.to_sym).to be :black
+    end
+
     context 'when the table for the model does not yet exist' do
       it 'does not raise any errors' do
         expect(ModelWithoutTable).to receive(:warn).with(/pending migration/)
