@@ -146,6 +146,10 @@ RSpec.describe Enumbler do
       expect(Color.black.to_sym).to be :black
     end
 
+    it 'uses the enum for #to_graphql_enum', :seed do
+      expect(Color.black.to_graphql_enum).to eq 'BLACK'
+    end
+
     context 'when the table for the model does not yet exist' do
       it 'does not raise any errors' do
         expect(ModelWithoutTable).to receive(:warn).with(/pending migration/)
