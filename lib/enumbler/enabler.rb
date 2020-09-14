@@ -17,22 +17,29 @@ module Enumbler
       @enumble
     end
 
+    # The enumble graphql_enum if it exists.
+    # @return [Symbol]
+    def to_graphql_enum
+      to_enumble_attribute(:graphql_enum) || super
+    end
+
     # The enumble label if it exists.
     # @return [String]
     def to_s
-      enumble = self.class.find_enumble(id)
-      return enumble.label if enumble.present?
-
-      super
+      to_enumble_attribute(:label) || super
     end
 
     # The enumble symbol if it exists.
     # @return [Symbol]
     def to_sym
-      enumble = self.class.find_enumble(id)
-      return enumble.enum if enumble.present?
+      to_enumble_attribute(:enum) || super
+    end
 
-      super
+    private
+
+    def to_enumble_attribute(attribute)
+      enumble = self.class.find_enumble(id)
+      return enumble.send(attribute) if enumble.present?
     end
 
     # These ClassMethods can be included in any model that you wish to
