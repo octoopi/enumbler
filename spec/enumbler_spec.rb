@@ -10,6 +10,7 @@ ActiveRecord::Schema.define do
   end
 
   create_table :feelings, force: true do |t|
+    t.string :label
     t.string :emotion, null: false, index: { unique: true }
   end
 
@@ -57,7 +58,8 @@ class Feeling < ApplicationRecord
 
   enumble :sad, 1
   enumble :happy, 2
-  enumble :verklempt, 3, label: 'overcome with emotion'
+  enumble :verklempt, 3, emotion: 'overcame with emotion', label: 'blue'
+  enumble :schadenfreude, 4, label: 'green'
 end
 
 # Our House class, it has a color of course!
@@ -240,7 +242,12 @@ RSpec.describe Enumbler do
   describe '.enumbler_label_column_name' do
     before { Feeling.seed_the_enumbler! }
     it 'adds the label to the correct column' do
-      expect(Feeling.verklempt.emotion).to eq 'overcome with emotion'
+      expect(Feeling.verklempt.emotion).to eq 'overcame with emotion'
+      expect(Feeling.verklempt.label).to eq 'blue'
+      expect(Feeling.verklempt.enumble.label).to eq 'overcame with emotion'
+      expect(Feeling.schadenfreude.emotion).to eq 'schadenfreude'
+      expect(Feeling.schadenfreude.label).to eq 'green'
+      expect(Feeling.schadenfreude.enumble.label).to eq 'schadenfreude'
       expect(Feeling.sad).to be_sad
       expect(Feeling.enumbles.first).to have_attributes(label: 'sad')
     end
