@@ -51,6 +51,7 @@ jobs:
         ruby-version: 2.7.x
 
     - name: Publish to RubyGems
+      if: contains(github.ref, 'refs/tags/')
       run: |
         mkdir -p $HOME/.gem
         touch $HOME/.gem/credentials
