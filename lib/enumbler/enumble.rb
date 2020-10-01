@@ -8,9 +8,10 @@ module Enumbler
     def initialize(enum, id, label: nil, label_column_name: :label, **attributes)
       @id = id
       @enum = enum
-      @label = label || enum.to_s.dasherize
       @label_column_name = label_column_name
+      @label = (label_col_specified? ? attributes[label_column_name] : label) || enum.to_s.dasherize
       @additional_attributes = attributes || {}
+      @additional_attributes.merge!({ label: label }) if label_col_specified?
     end
 
     def ==(other)
@@ -19,10 +20,9 @@ module Enumbler
     end
 
     def attributes
-      @additional_attributes.merge({
-        id: id,
-        label_column_name => label,
-      })
+      hash = { id: id, label_column_name => label }
+      hash.merge!({ label: @additional_attributes[:label] }) if label_col_specified?
+      @additional_attributes.merge(hash)
     end
 
     # Used to return itself from a class method.
@@ -49,6 +49,12 @@ module Enumbler
 
     def to_s
       enum
+    end
+
+    private
+
+    def label_col_specified?
+      label_column_name != :label
     end
   end
 end

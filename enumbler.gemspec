@@ -34,8 +34,9 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency 'database_cleaner-active_record', '~> 1.8.0'
   spec.add_development_dependency 'fuubar', '~> 2.5'
+  spec.add_development_dependency 'pry'
   spec.add_development_dependency 'rake', '~> 12.0'
   spec.add_development_dependency 'rspec', '~> 3.9.0'
-  spec.add_development_dependency 'rubocop', '~> 0.81.0'
+  spec.add_development_dependency 'rubocop', '~> 0.91.0'
   spec.add_development_dependency 'sqlite3', '~> 1.4.0'
 end
