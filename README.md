@@ -108,12 +108,14 @@ House.color(Color.black, :white) # => ActiveRecord::Relation<house, house2>
 
 ### Use a column other than `label`
 
-By default, the Enumbler expects a table in the database with a column `label`.  However, you can change this to another underlying column name.  Note that the enumbler still treats it as a `label` column; however it will be saved to the correct place in the database.
+By default, the Enumbler expects a table in the database with a column `label`.  However, you can change this to another underlying column name.  Note that the enumbler still treats it as a `label` column; however it will be saved to the correct place in the database. Your model now can have its own `label` separate from whatever attribute/column was
+specified for Enumbler usage.
 
 ```ruby
 ActiveRecord::Schema.define do
   create_table :feelings, force: true do |t|
     t.string :emotion, null: false, index: { unique: true }
+    t.string :label
   end
 end
 
@@ -125,8 +127,15 @@ class Feeling < ApplicationRecord
 
   enumble :sad, 1
   enumble :happy, 2
-  enumble :verklempt, 3, label: 'overcome with emotion'
+  enumble :verklempt, 3, label: "Verklempt!", emotion: 'overcome with emotion'
 end
+
+# Now the `Feeling` model can use `label` if it wants to
+# and not conflict with Enumbler usage (:emotion in this case)
+# .enumble.label & .emotion is used internally by Enumbler
+Feeling.verklempt.label           # => 'Verklempt!'
+Feeling.verklempt.enumble.label   # => 'overcome with emotion'
+Feeling.verklempt.emotion         # => 'overcome with emotion'
 ```
 
 ## Core ext
@@ -140,6 +149,7 @@ when :black
 when :blue, :purple
   'very surprised'
 end
+```
 
 ## Development
 
