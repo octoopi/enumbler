@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module Enumbler
-  VERSION = '0.6.14'
+  VERSION = '0.7.0'
 end
