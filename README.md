@@ -91,6 +91,17 @@ Color.ids_from_enumbler(:black, 'does-no-exist') # => [1, nil]
 Color.ids_from_enumbler!(:black, 'does-no-exist') # => raises Enumbler::Error
 Color.id_from_enumbler!(:does_not_exist) # => raises Enumbler::Error
 
+# Get a model instance (like `.find_by` in Rails)
+Color.find_by_enumble(1)
+Color.find_by_enumble(:black)
+Color.find_by_enumble("black")
+Color.find_by_enumble("BLACK")
+Color.find_by_enumble(Color.black) # => self
+Color.find_by_enumble("whoops")    # => nil
+
+# Raise ActiveRecord::RecordNotFound error with bang
+Color.find_by_enumble!("whoops")    # => nil
+
 # Get enumble object by id
 house = House.create!(color: Color.black)
 
