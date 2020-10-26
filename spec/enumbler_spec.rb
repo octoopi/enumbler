@@ -263,6 +263,38 @@ RSpec.describe Enumbler do
     end
   end
 
+  describe '.find_by_enumble', :seed do
+    it 'returns the correct instance of the model' do
+      color = Color.black
+
+      expect(Color.find_by_enumble(color)).to eq color
+      expect(Color.find_by_enumble(color.id)).to eq color
+      expect(Color.find_by_enumble('black')).to eq color
+      expect(Color.find_by_enumble('BLACK')).to eq color
+      expect(Color.find_by_enumble(:black)).to eq color
+      expect(Color.find_by_enumble(House.first)).to be_nil
+      expect(Color.find_by_enumble(nil)).to be_nil
+      expect(Color.find_by_enumble(:bob)).to be_nil
+      expect(Color.find_by_enumble('bob')).to be_nil
+    end
+  end
+
+  describe '.find_by_enumble!', :seed do
+    it 'returns the correct instance of the model' do
+      color = Color.black
+
+      expect(Color.find_by_enumble!(color)).to eq color
+      expect(Color.find_by_enumble!(color.id)).to eq color
+      expect(Color.find_by_enumble!('black')).to eq color
+      expect(Color.find_by_enumble!('BLACK')).to eq color
+      expect(Color.find_by_enumble!(:black)).to eq color
+      expect { Color.find_by_enumble!(House.first) }.to raise_error(ActiveRecord::RecordNotFound)
+      expect { Color.find_by_enumble!(nil) }.to raise_error(ActiveRecord::RecordNotFound)
+      expect { Color.find_by_enumble!(:bob) }.to raise_error(ActiveRecord::RecordNotFound)
+      expect { Color.find_by_enumble!('bob') }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+  end
+
   describe '.find_enumbles', :seed do
     it 'returns the correct enumbles' do
       expect(Color.find_enumbles(1, 2)).to contain_exactly(Color.enumbles.first, Color.enumbles.second)

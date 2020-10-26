@@ -126,6 +126,51 @@ module Enumbler
         @enumbler_label_column_name = label_column_name
       end
 
+      # Like `ActiveRecord#find_by`, will try and return an instance of this
+      # model that matches any of our enumble attributes (instance, id, string,
+      # or symbol).
+      #
+      #   Color.find_by_enumble(1)
+      #   Color.find_by_enumble(:black)
+      #   Color.find_by_enumble("black")
+      #   Color.find_by_enumble("BLACK")
+      #   Color.find_by_enumble(Color.black) # => self
+      #   Color.find_by_enumble("whoops")    # => nil
+      #
+      # @param arg [Class, String, Integer, Symbol] search argument
+      # @param case_sensitive [Boolean] string search to be case sensitive (default: false)
+      # @param raise_error [Boolean] whether to raise RecordNotFound error (default: false)
+      # @return [self]
+      def find_by_enumble(arg, case_sensitive: false, raise_error: false)
+        return arg if arg.instance_of?(@enumbled_model)
+
+        id = id_from_enumbler(arg, case_sensitive: case_sensitive, raise_error: raise_error)
+
+        find_by = raise_error ? :find_by! : :find_by
+        @enumbled_model.public_send(find_by, id: id)
+      rescue Enumbler::Error
+        raise ActiveRecord::RecordNotFound.new("Couldn't find #{@enumbled_model}", @enumbled_model)
+      end
+
+      # Like `ActiveRecord#find`, will try and return an instance of this model
+      # that matches any of our enumble attributes (instance, id, string, or
+      # symbol) raises a `RecordNotFound` error if none found.
+      #
+      #   Color.find_by_enumble!(1)
+      #   Color.find_by_enumble!(:black)
+      #   Color.find_by_enumble!("black")
+      #   Color.find_by_enumble!("BLACK")
+      #   Color.find_by_enumble!(Color.black) # => returns self
+      #   Color.find_by_enumble!("whoops")    # => raise ActiveRecord::RecordNotFound
+      #
+      # @param arg [Class, String, Integer, Symbol] search argument
+      # @param case_sensitive [Boolean] string search to be case sensitive (default: false)
+      # @param raise_error [Boolean] whether to raise RecordNotFound error (default: false)
+      # @return [self]
+      def find_by_enumble!(arg, case_sensitive: false)
+        find_by_enumble(arg, case_sensitive: case_sensitive, raise_error: true)
+      end
+
       # See {.find_enumbles}.  Simply returns the first object.  Use when you
       # want one argument to be found and not returned in an array.
       # @raise [Error] when there is no [Enumbler::Enumble] to be found and
