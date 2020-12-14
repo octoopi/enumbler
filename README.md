@@ -170,13 +170,11 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Roadmap
 
-* We need to add in support for additional attributes/columns in the enumbled table.  For example, following the `Color` concept, we may want to have a column which is `hex` and stores the colors `hex` value (e.g., `FFFFFF`).  This should be supported.
-* Ideally, we could make this work more like a traditional `enum`; for example, overriding the `.where` method by allowing something like: `House.where(color: :blue)` instead of `House.where_color(:blue)`.  But right now am in a rush and not sure how to go about doing that properly.
+* Ideally, we could make this work more like a traditional `enum`; for example, overriding the `.where` method by allowing something like: `House.where(color: :blue)` instead of `House.color(:blue)`.  But right now am in a rush and not sure how to go about doing that properly.
 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/linguabee/enumbler.
-
 
 ## License
 
