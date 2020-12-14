@@ -110,13 +110,36 @@ RSpec.describe Enumbler do
     it 'raises an error when the same enumble is added twice' do
       expect { Color.enumble(:white, 1) }.to raise_error(Enumbler::Error, /twice/)
     end
+
     it 'raises an error when no numeric id is passed as the second argument' do
       expect { Color.enumble(:white, label: 'error') }.to raise_error(Enumbler::Error, /numeric/)
     end
+
+    it 'raises an error when there is a class method naming conflict' do
+      expect do
+        Class.new(ApplicationRecord) do
+          include Enumbler::Enabler
+
+          enumble :transaction, 1
+        end
+      end.to raise_error(Enumbler::Error, /class method `transaction`/)
+    end
+
+    it 'raises an error when there is a instance method naming conflict' do
+      expect do
+        Class.new(ApplicationRecord) do
+          include Enumbler::Enabler
+
+          enumble :persisted, 1
+        end
+      end.to raise_error(Enumbler::Error, /instance method `persisted\?`/)
+    end
+
     it 'creates the constants' do
       expect(Color::BLACK).to eq 1
       expect(Color::WHITE).to eq 2
     end
+
     it 'creates the class finder methods', :seed do
       expect(Color.black).to eq Color.find(Color::BLACK)
     end

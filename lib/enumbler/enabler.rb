@@ -375,11 +375,21 @@ module Enumbler
         method_name = "#{enumble.enum}?"
         not_method_name = "not_#{enumble.enum}?"
         alias_method_name = "is_#{enumble.enum}"
+        any_method_name = "any_#{enumble.enum}?"
+
+        [method_name, not_method_name, alias_method_name].each do |mname|
+          detect_enumbler_conflict(enumble.enum, mname)
+        end
+
+        [enumble.enum, any_method_name].each do |mname|
+          detect_enumbler_conflict(enumble.enum, mname, klass_method: true)
+        end
 
         const_set(enumble.enum.to_s.upcase, enumble.id)
         define_method(method_name) { id == enumble.id }
         define_method(not_method_name) { id != enumble.id }
         alias_method alias_method_name, method_name
+
         define_singleton_method(enumble.enum) do |attr = nil|
           return find(enumble.id) if attr.nil?
 
@@ -388,11 +398,40 @@ module Enumbler
           raise Enumbler::Error, "The attribute #{attr} is not supported on this Enumble."
         end
 
-        define_singleton_method("any_#{enumble.enum}?") do
+        define_singleton_method(any_method_name) do
           where(id: enumble.id).exists?
         rescue NoMethodError
           raise Enumbler::Error, "The attribute #{attr} is not supported on this Enumble."
         end
+      end
+
+      # This idea sourced lovingly from ActiveRecord::Enum
+      ENUMBLER_CONFLICT_MESSAGE = <<~TEXT.squish
+        You tried to define the enumble :%<enum>s on the model %<klass>s, but
+        this will generate a %<type>s method `%<method>s`, which is already defined
+        by %<source>s.
+      TEXT
+
+      def detect_enumbler_conflict(enumble_name, method_name, klass_method: false)
+        if klass_method && dangerous_class_method?(method_name)
+          raise_conflict_error(enumble_name, method_name, type: 'class')
+        elsif klass_method && method_defined_within?(method_name, ActiveRecord::Relation)
+          raise_conflict_error(enumble_name, method_name, type: 'class', source: ActiveRecord::Relation.name)
+        elsif !klass_method && dangerous_attribute_method?(method_name)
+          raise_conflict_error(enumble_name, method_name)
+        end
+      end
+
+      def raise_conflict_error(enumble_name, method_name, type: 'instance', source: 'ActiveRecord')
+        raise Error,
+          format(
+            ENUMBLER_CONFLICT_MESSAGE,
+            enum: enumble_name,
+            klass: name,
+            type: type,
+            method: method_name,
+            source: source
+          )
       end
 
       # I accidentally forgot to provide an id one time and it was confusing as
