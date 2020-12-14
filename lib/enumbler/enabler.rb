@@ -227,6 +227,8 @@ module Enumbler
             enumble =
               if arg.is_a?(Symbol)
                 @enumbled_model.enumbles.find { |e| e.enum == arg }
+              elsif arg.is_a?(Enumbler::Enumble)
+                @enumbled_model.enumbles.find { |e| e.enum == arg.enum }
               elsif arg.is_a?(String)
                 @enumbled_model.enumbles.find do |e|
                   if case_sensitive
