@@ -322,11 +322,14 @@ RSpec.describe Enumbler do
     it 'returns the correct enumbles' do
       expect(Color.find_enumbles(1, 2)).to contain_exactly(Color.enumbles.first, Color.enumbles.second)
       expect(Color.find_enumble(1)).to eq Color.enumbles.first
+      expect(Color.find_enumble(Color.enumbles.first)).to eq Color.enumbles.first
     end
+
     it 'can return an enumble based on a ActiveModel record' do
       color = Color.find(1)
       expect(Color.find_enumbles!(color)).to contain_exactly(color.enumble)
     end
+
     it 'raises an error when something that is not an integer is passed' do
       expect { Color.find_enumbles('bob') }.not_to raise_error
       expect { Color.find_enumbles!('bob') }.to raise_error(Enumbler::Error, /bob/)
