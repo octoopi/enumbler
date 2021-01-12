@@ -1,0 +1,12 @@
+# EXAMPLE USAGE
+# Refer for explanation to following link:
+# https://github.com/Arkweid/lefthook/blob/master/docs/full_guide.md
+
+pre-commit:
+  parallel: true
+  commands:
+    rubocop:
+      tags: backend style
+      glob: "*.rb"
+      exclude: "application.rb|routes.rb"
+      run: bundle exec rubocop --force-exclusion {all_files}

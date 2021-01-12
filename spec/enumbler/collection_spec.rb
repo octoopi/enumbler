@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe Enumbler::Collection do
-  it 'returns the enumble based on its enum method' do
+  it "returns the enumble based on its enum method" do
     e1 = Enumbler::Enumble.new(:blue_bonnet, 1)
     e2 = Enumbler::Enumble.new(:pink_hat, 2)
     ec = Enumbler::Collection.new
