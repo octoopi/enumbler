@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-require 'enumbler/core_ext/symbol/case_equality_operator'
+require "enumbler/core_ext/symbol/case_equality_operator"
 
-require 'enumbler/collection'
-require 'enumbler/enumble'
-require 'enumbler/enabler'
-require 'enumbler/version'
+require "enumbler/collection"
+require "enumbler/enumble"
+require "enumbler/enabler"
+require "enumbler/version"
 
-require 'active_support/concern'
-require 'active_support/inflector'
+require "active_support/concern"
+require "active_support/inflector"
 
 # The Enumbler add integrity to our enum implementation!
 module Enumbler

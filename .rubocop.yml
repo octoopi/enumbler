@@ -1,7 +1,6 @@
 AllCops:
-  TargetRubyVersion: 2.6
-  Exclude:
-    - 'bin/pre_commit_rubocop.rb'
+  NewCops: enable
+  TargetRubyVersion: 2.5
 
 Layout/ArgumentAlignment:
   Enabled: true
@@ -11,14 +10,34 @@ Layout/FirstHashElementIndentation:
   Enabled: true
   EnforcedStyle: consistent
 
+Layout/HashAlignment:
+  Enabled: true
+  # This allows "implicit" hash arguments (without curly braces) to be aligned
+  # differently.
+  EnforcedLastArgumentHashStyle: ignore_implicit
+
 Layout/LineLength:
   AllowURI: true
   Max: 119
+
+Layout/MultilineMethodCallIndentation:
+  Enabled: true
+  EnforcedStyle: indented
 
 Lint/RaiseException:
   Enabled: true
 
 Lint/StructNewOverride:
+  Enabled: true
+
+Metrics:
+  Enabled: false
+
+Naming/MethodParameterName:
+  Enabled: true
+  AllowedNames: [at, by, db, id, in, ip, of, on, to, tz]
+
+Naming/PredicateName:
   Enabled: true
 
 Style/Documentation:
@@ -33,6 +52,9 @@ Style/HashTransformKeys:
 Style/HashTransformValues:
   Enabled: true
 
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
 Style/TrailingCommaInHashLiteral:
   Enabled: true
   EnforcedStyleForMultiline: consistent_comma
@@ -41,5 +63,5 @@ Style/TrailingCommaInArrayLiteral:
   Enabled: true
   EnforcedStyleForMultiline: consistent_comma
 
-Metrics:
-  Enabled: false
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: consistent_comma

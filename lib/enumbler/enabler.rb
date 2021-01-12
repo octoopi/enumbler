@@ -12,7 +12,7 @@ module Enumbler
     def enumble
       @enumble = self.class.find_enumble(id)
 
-      raise Error, 'An enumble is not defined for this record!' if @enumble.nil?
+      raise Error, "An enumble is not defined for this record!" if @enumble.nil?
 
       @enumble
     end
@@ -332,7 +332,7 @@ module Enumbler
       #   longer defined (default: false)
       # @param validate [Boolean] validate on save?
       def seed_the_enumbler(delete_missing_records: false, validate: true)
-        max_database_id = all.order('id desc').take&.id || 0
+        max_database_id = all.order("id desc").take&.id || 0
         max_enumble_id = @enumbles.map(&:id).max
 
         # If we are not deleting records, we just need to update each listed
@@ -416,15 +416,15 @@ module Enumbler
 
       def detect_enumbler_conflict(enumble_name, method_name, klass_method: false)
         if klass_method && dangerous_class_method?(method_name)
-          raise_conflict_error(enumble_name, method_name, type: 'class')
+          raise_conflict_error(enumble_name, method_name, type: "class")
         elsif klass_method && method_defined_within?(method_name, ActiveRecord::Relation)
-          raise_conflict_error(enumble_name, method_name, type: 'class', source: ActiveRecord::Relation.name)
+          raise_conflict_error(enumble_name, method_name, type: "class", source: ActiveRecord::Relation.name)
         elsif !klass_method && dangerous_attribute_method?(method_name)
           raise_conflict_error(enumble_name, method_name)
         end
       end
 
-      def raise_conflict_error(enumble_name, method_name, type: 'instance', source: 'ActiveRecord')
+      def raise_conflict_error(enumble_name, method_name, type: "instance", source: "ActiveRecord")
         raise Error,
           format(
             ENUMBLER_CONFLICT_MESSAGE,
@@ -432,7 +432,7 @@ module Enumbler
             klass: name,
             type: type,
             method: method_name,
-            source: source
+            source: source,
           )
       end
 
@@ -456,7 +456,7 @@ module Enumbler
           "The model #{self} does not support the attribute(s): #{unsupported_attrs.keys.map(&:to_s).to_sentence}"
       rescue ActiveRecord::StatementInvalid
         warn "[Enumbler Warning] => Unable to find a table for #{self}."\
-          'This is to be expected if there is a pending migration; however, if there is not then something is amiss.'
+          "This is to be expected if there is a pending migration; however, if there is not then something is amiss."
       end
     end
   end

@@ -16,7 +16,7 @@ module Enumbler
       super
     end
 
-    def respond_to_missing?(method_name, include_private = false)
+    def respond_to_missing?(method_name, *args, &block)
       enumble = find { |e| e.enum == method_name }
       enumble.present? || super
     end
