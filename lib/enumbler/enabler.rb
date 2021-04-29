@@ -401,7 +401,7 @@ module Enumbler
         end
 
         define_singleton_method(any_method_name) do
-          where(id: enumble.id).exists?
+          exists?(id: enumble.id)
         rescue NoMethodError
           raise Enumbler::Error, "The attribute #{attr} is not supported on this Enumble."
         end
@@ -452,8 +452,14 @@ module Enumbler
 
         return if unsupported_attrs.blank?
 
+        ActiveRecord::Migration.check_pending!
+
         raise Enumbler::Error,
           "The model #{self} does not support the attribute(s): #{unsupported_attrs.keys.map(&:to_s).to_sentence}"
+      rescue ActiveRecord::PendingMigrationError
+        warn "[Enumbler Warning] => The model #{self} does not currently support the attribute(s): #{unsupported_attrs.keys.map(&:to_s).to_sentence}." \
+          " You have a pending migration which hopefully would remedy this!  If not, you need to add a migration for this attibrute or" \
+          " remove it from the Enumbler."
       rescue ActiveRecord::StatementInvalid
         warn "[Enumbler Warning] => Unable to find a table for #{self}."\
           "This is to be expected if there is a pending migration; however, if there is not then something is amiss."
