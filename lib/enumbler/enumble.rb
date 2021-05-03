@@ -11,7 +11,7 @@ module Enumbler
       @label_column_name = label_column_name
       @label = (label_col_specified? ? attributes[label_column_name] : label) || enum.to_s.dasherize
       @additional_attributes = attributes || {}
-      @additional_attributes.merge!({ label: label }) if label_col_specified?
+      @additional_attributes.merge!({ label: label }) unless label.nil?
     end
 
     def ==(other)
@@ -21,7 +21,6 @@ module Enumbler
 
     def attributes
       hash = { id: id, label_column_name => label }
-      hash.merge!({ label: @additional_attributes[:label] }) if label_col_specified?
       @additional_attributes.merge(hash)
     end
 
