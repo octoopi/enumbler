@@ -29,7 +29,7 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "activerecord", [">= 5.2.3", "< 7"]
+  spec.add_dependency "activerecord", ">= 5.2.3", "< 8"
   spec.add_dependency "activesupport", [">= 5.2.3", "< 7"]
 
   spec.add_development_dependency "database_cleaner-active_record", "~> 1.8.0"
