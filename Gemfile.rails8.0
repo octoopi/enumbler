@@ -23,6 +23,6 @@ group :development, :test do
   gem "pry"
   gem "rake",                           "~> 13.0"
   gem "rspec",                          "~> 3.9"
-  gem "rubocop",                        "~> 1.0", require: false
+  gem "rubocop",                        "~> 0.91.0", require: false
   gem "sqlite3",                        ">= 2.1"
 end

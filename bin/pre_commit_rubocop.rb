@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+
 # frozen_string_literal: true
 
 # Put this file into your path and use `<file> install` to add a new hook
@@ -29,6 +30,14 @@ end
             else
               " --parallel"
             end)
-result = `bundle exec rubocop #{parallel} --color --force-exclusion #{changed.shelljoin}`
-puts result unless $CHILD_STATUS.success?
-exit $CHILD_STATUS.exitstatus
+
+# grab the Process::Status from $?
+status = $?
+
+unless status.success?
+  puts result
+  exit status.exitstatus
+end
+
+# if we got here, rubocop passed
+exit 0

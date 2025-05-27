@@ -9,14 +9,14 @@ module Enumbler
   # Color.enumbles.black # => [Enumbler::Enumble]
   # ```
   class Collection < Array
-    def method_missing(method_name, *args, &block)
+    def method_missing(method_name, *args, &)
       enumble = find { |e| e.enum == method_name }
       return enumble if enumble.present?
 
       super
     end
 
-    def respond_to_missing?(method_name, *args, &block)
+    def respond_to_missing?(method_name, *args, &)
       enumble = find { |e| e.enum == method_name }
       enumble.present? || super
     end

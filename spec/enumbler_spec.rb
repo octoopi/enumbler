@@ -112,7 +112,7 @@ RSpec.describe Enumbler do
     end
 
     it "raises an error when no numeric id is passed as the second argument" do
-      expect { Color.enumble(:white, label: "error") }.to raise_error(Enumbler::Error, /numeric/)
+      expect { Color.enumble(:white, "foo", label: "error") }.to raise_error(Enumbler::Error, /numeric/)
     end
 
     it "raises an error when there is a class method naming conflict" do

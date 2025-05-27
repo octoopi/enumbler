@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description   = "A more complete description is forthcoming."
   spec.homepage      = "https://github.com/linguabee/enumbler"
   spec.license       = "MIT"
-  spec.required_ruby_version = Gem::Requirement.new(">= 2.5.0")
+  spec.required_ruby_version = Gem::Requirement.new(">= 3.1")
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
 
@@ -29,14 +29,7 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "activerecord", [">= 5.2.3", "< 7"]
-  spec.add_dependency "activesupport", [">= 5.2.3", "< 7"]
-
-  spec.add_development_dependency "database_cleaner-active_record", "~> 1.8.0"
-  spec.add_development_dependency "fuubar", "~> 2.5"
-  spec.add_development_dependency "pry"
-  spec.add_development_dependency "rake", "~> 12.0"
-  spec.add_development_dependency "rspec", "~> 3.9.0"
-  spec.add_development_dependency "rubocop", "~> 0.91.0"
-  spec.add_development_dependency "sqlite3", "~> 1.4.0"
+  spec.add_dependency "activerecord", [">= 6.0", "< 9"]
+  spec.add_dependency "activesupport", [">= 6.0", "< 9"]
+  spec.metadata["rubygems_mfa_required"] = "true"
 end
