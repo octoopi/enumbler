@@ -180,6 +180,34 @@ RSpec.describe Enumbler do
         expect(ModelWithoutTable).to receive(:warn).with(/pending migration/)
         ModelWithoutTable.enumble(:test, 2, bob: "ok")
       end
+
+      context "when Enumbler.suppress_database_warnings is enabled" do
+        around do |example|
+          Enumbler.suppress_database_warnings = true
+          example.run
+        ensure
+          Enumbler.suppress_database_warnings = nil
+        end
+
+        it "does not warn" do
+          expect(ModelWithoutTable).not_to receive(:warn)
+          ModelWithoutTable.enumble(:quiet, 3, bob: "ok")
+        end
+      end
+
+      context "when ENV['ENUMBLER_SUPPRESS_DATABASE_WARNINGS'] is set" do
+        around do |example|
+          ENV["ENUMBLER_SUPPRESS_DATABASE_WARNINGS"] = "1"
+          example.run
+        ensure
+          ENV.delete("ENUMBLER_SUPPRESS_DATABASE_WARNINGS")
+        end
+
+        it "does not warn" do
+          expect(ModelWithoutTable).not_to receive(:warn)
+          ModelWithoutTable.enumble(:hushed, 4, bob: "ok")
+        end
+      end
     end
 
     it "queries the collection", :seed do

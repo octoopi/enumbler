@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    enumbler (0.10.0)
+    enumbler (0.11.0)
       activerecord (>= 6.0, < 9)
       activesupport (>= 6.0, < 9)
 
@@ -85,6 +85,7 @@ GEM
     ruby-progressbar (1.10.1)
     securerandom (0.4.1)
     sqlite3 (2.6.0-arm64-darwin)
+    sqlite3 (2.6.0-x86_64-linux-gnu)
     timeout (0.4.3)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
@@ -93,6 +94,7 @@ GEM
 
 PLATFORMS
   arm64-darwin
+  x86_64-linux
 
 DEPENDENCIES
   activemodel (>= 8)

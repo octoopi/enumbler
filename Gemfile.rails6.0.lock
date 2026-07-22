@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    enumbler (0.10.0)
+    enumbler (0.11.0)
       activerecord (>= 6.0, < 9)
       activesupport (>= 6.0, < 9)
 
@@ -96,4 +96,4 @@ DEPENDENCIES
   sqlite3 (~> 1.6)
 
 BUNDLED WITH
-   2.4.12
+   2.6.9

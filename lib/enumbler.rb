@@ -17,6 +17,26 @@ module Enumbler
   # An error raised by the Enumbler.
   class Error < StandardError; end
 
+  class << self
+    attr_writer :suppress_database_warnings
+
+    # Suppress the boot-time `[Enumbler Warning]` messages emitted when a
+    # model's table or attributes cannot be verified (e.g., while the database
+    # is dropped during a test database reset).  Enable by setting
+    # `Enumbler.suppress_database_warnings = true` or by setting the
+    # environment variable `ENUMBLER_SUPPRESS_DATABASE_WARNINGS` to any
+    # non-empty value.  The Ruby-level setting, when assigned, wins over the
+    # environment variable.
+    # @return [Boolean]
+    def suppress_database_warnings?
+      if @suppress_database_warnings.nil?
+        ENV["ENUMBLER_SUPPRESS_DATABASE_WARNINGS"].present?
+      else
+        @suppress_database_warnings
+      end
+    end
+  end
+
   # Include these ClassMethods in your base ApplicationRecord model to bestow
   # any of your models with the ability to be connected to an Enumbled relation
   # in the same way you would use `belongs_to` now you use `enumbled_to`.
