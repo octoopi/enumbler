@@ -6,9 +6,18 @@ on:
     tags: ["*"]
   pull_request:
 
+# A new push to the same ref supersedes any in-flight run; cancel the stale
+# one rather than paying for both.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   rspec:
     runs-on: ubuntu-latest
+    # Typical matrix job is under 2 minutes; a hung job otherwise runs to
+    # GitHub's 6-hour default.
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -51,6 +60,7 @@ jobs:
 
     name: Publish Gem
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
 
