@@ -462,12 +462,16 @@ module Enumbler
         raise Enumbler::Error,
           "The model #{self} does not support the attribute(s): #{unsupported_attrs.keys.map(&:to_s).to_sentence}"
       rescue ActiveRecord::PendingMigrationError
+        return if Enumbler.suppress_database_warnings?
+
         warn "[Enumbler Warning] => The model #{self} does not currently support the attribute(s): " \
              "#{unsupported_attrs.keys.map(&:to_s).to_sentence}. " \
              "You have a pending migration which hopefully would remedy this! " \
              "If not, you need to add a migration for this attibrute or " \
              "remove it from the Enumbler."
       rescue ActiveRecord::StatementInvalid
+        return if Enumbler.suppress_database_warnings?
+
         warn "[Enumbler Warning] => Unable to find a table for #{self}." \
              "This is to be expected if there is a pending migration;  " \
              "however, if there is not then something is amiss."

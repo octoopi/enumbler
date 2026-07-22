@@ -162,11 +162,54 @@ when :blue, :purple
 end
 ```
 
+## Suppressing database warnings
+
+When an `enumble` defines extra attributes, the Enumbler verifies them against the model's table at class-load time.  If the table cannot be inspected — for example, while your test databases are dropped mid-way through a `rake parallel:setup` — it prints an `[Enumbler Warning]` for every affected model rather than raising.  If those warnings are just noise in your workflow, you can suppress them:
+
+```ruby
+Enumbler.suppress_database_warnings = true
+```
+
+Or set the environment variable `ENUMBLER_SUPPRESS_DATABASE_WARNINGS` to any non-empty value — handy for wrapping database reset commands:
+
+```bash
+ENUMBLER_SUPPRESS_DATABASE_WARNINGS=1 bundle exec rake parallel:setup
+```
+
+The Ruby-level setting, when assigned, takes precedence over the environment variable.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+To install this gem onto your local machine, run `bundle exec rake install`.
+
+### Branching (modified git flow)
+
+Day-to-day work follows git flow: feature/bug/chore branches come off `develop` and are merged back into `develop` via PR. Releases move `develop` into `main` through a `release/x.y.z` branch (or a `hotfix/x.y.z` branch off `main` for urgent fixes), and after tagging, the tag is merged back into `develop` so both branches share the release commit.
+
+### Releasing a New Version
+
+A release is triggered by pushing a **version tag** to GitHub: the `CI Matrix Testing` workflow runs the rspec matrix and, if green, the `Publish Gem` job builds the gem and pushes it to [rubygems.org](https://rubygems.org).
+
+Two things to know before tagging:
+
+1. The published version comes from `lib/enumbler/version.rb`, **not** the tag name — make sure they match (the tag is bare, no `v` prefix: `0.10.0`).
+2. RubyGems rejects duplicate versions, so every release needs a version bump.
+
+Steps:
+
+1. Bump `Enumbler::VERSION` in `lib/enumbler/version.rb` (and run `bundle install` so the lockfiles pick it up) on a `release/x.y.z` branch off `develop` (or `hotfix/x.y.z` off `main`).
+2. Merge the branch into `main`, then tag the release commit:
+
+   ```bash
+   git checkout main && git pull
+   git tag -a 0.10.0 -m "Release 0.10.0"
+   git push origin main 0.10.0
+   ```
+
+3. Watch the `CI Matrix Testing` workflow on the tag: when the publish job is green, confirm the new version on [rubygems.org](https://rubygems.org/gems/enumbler).
+4. Merge the tag back into `develop`: `git checkout develop && git merge 0.10.0 && git push`.
 
 ### Matrix testing
 
