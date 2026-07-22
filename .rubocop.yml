@@ -1,6 +1,11 @@
 AllCops:
   NewCops: enable
-  TargetRubyVersion: 2.5
+  TargetRubyVersion: 3.4
+  Exclude:
+    - 'bin/**/*'
+
+Gemspec/RequiredRubyVersion:
+  Enabled: false
 
 Layout/ArgumentAlignment:
   Enabled: true
@@ -39,6 +44,10 @@ Naming/MethodParameterName:
 
 Naming/PredicateName:
   Enabled: true
+
+# Works in 3.4 only
+Style/ArgumentsForwarding:
+  Enabled: false
 
 Style/Documentation:
   Enabled: false

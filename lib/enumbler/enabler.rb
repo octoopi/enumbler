@@ -7,6 +7,13 @@ module Enumbler
   module Enabler
     extend ActiveSupport::Concern
 
+    # This idea sourced lovingly from ActiveRecord::Enum
+    ENUMBLER_CONFLICT_MESSAGE = <<~TEXT
+      You tried to define the enumble :%<enum>s on the model %<klass>s, but
+      this will generate a %<type>s method `%<method>s`, which is already defined
+      by %<source>s.
+    TEXT
+
     # The Enumble definition that this record defined.
     # @return [Enumbler::Enumble]
     def enumble
@@ -39,7 +46,7 @@ module Enumbler
 
     def to_enumble_attribute(attribute)
       enumble = self.class.find_enumble(id)
-      return enumble.send(attribute) if enumble.present?
+      enumble.send(attribute) if enumble.present?
     end
 
     # These ClassMethods can be included in any model that you wish to
@@ -104,7 +111,7 @@ module Enumbler
 
       # By default, the Enumbler is expecting a table with an underlying column
       # named `label` that represents the enum in the database.  You can change
-      # this by calling `enumber_label_column_name` before you `enumble`!
+      # this by calling `enumlber_label_column_name` before you `enumble`!
       #
       #   ActiveRecord::Schema.define do
       #     create_table :feelings, force: true do |t|
@@ -407,13 +414,6 @@ module Enumbler
         end
       end
 
-      # This idea sourced lovingly from ActiveRecord::Enum
-      ENUMBLER_CONFLICT_MESSAGE = <<~TEXT.squish
-        You tried to define the enumble :%<enum>s on the model %<klass>s, but
-        this will generate a %<type>s method `%<method>s`, which is already defined
-        by %<source>s.
-      TEXT
-
       def detect_enumbler_conflict(enumble_name, method_name, klass_method: false)
         if klass_method && dangerous_class_method?(method_name)
           raise_conflict_error(enumble_name, method_name, type: "class")
@@ -452,17 +452,25 @@ module Enumbler
 
         return if unsupported_attrs.blank?
 
-        ActiveRecord::Migration.check_pending!
+        # The method .check_all_pending! was introduced in Rails 7.1
+        if ActiveRecord::Migration.respond_to?(:check_all_pending!)
+          ActiveRecord::Migration.check_all_pending!
+        else
+          ActiveRecord::Migration.check_pending!
+        end
 
         raise Enumbler::Error,
           "The model #{self} does not support the attribute(s): #{unsupported_attrs.keys.map(&:to_s).to_sentence}"
       rescue ActiveRecord::PendingMigrationError
-        warn "[Enumbler Warning] => The model #{self} does not currently support the attribute(s): #{unsupported_attrs.keys.map(&:to_s).to_sentence}." \
-          " You have a pending migration which hopefully would remedy this!  If not, you need to add a migration for this attibrute or" \
-          " remove it from the Enumbler."
+        warn "[Enumbler Warning] => The model #{self} does not currently support the attribute(s): " \
+             "#{unsupported_attrs.keys.map(&:to_s).to_sentence}. " \
+             "You have a pending migration which hopefully would remedy this! " \
+             "If not, you need to add a migration for this attibrute or " \
+             "remove it from the Enumbler."
       rescue ActiveRecord::StatementInvalid
-        warn "[Enumbler Warning] => Unable to find a table for #{self}."\
-          "This is to be expected if there is a pending migration; however, if there is not then something is amiss."
+        warn "[Enumbler Warning] => Unable to find a table for #{self}." \
+             "This is to be expected if there is a pending migration;  " \
+             "however, if there is not then something is amiss."
       end
     end
   end

@@ -24,12 +24,12 @@ Suppose you have a `House` and you want to add some `colors` to the house.  You 
 
 ```ruby
 ActiveRecord::Schema.define do
-  create_table :colors|t|
+  create_table :colors do |t|
     t.string :label, null: false, index: { unique: true }
     t.string :hex, null: true
   end
 
-  create_table :houses|t|
+  create_table :houses do |t|
     t.references :color, foreign_key: true, null: false
   end
 end
@@ -80,7 +80,7 @@ Color.find_enumble(:black) # => Enumbler::Enumble<:black>
 Color.find_enumble('Dark_Brown') # => Enumbler::Enumble<:dark-brown>
 
 # raises errors if none found
-Color.find_enumbles!!(:black, 'does-no-exist') # => raises Enumbler::Error
+Color.find_enumbles!(:black, 'does-no-exist') # => raises Enumbler::Error
 Color.find_enumble!(:does_not_exist) # => raises Enumbler::Error
 
 # Get ids flexibly, without raising an error if none found
@@ -167,6 +167,15 @@ end
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+
+### Matrix testing
+
+This gem supporst different versions of Ruby and Rails.  To test against all supported versions, run:
+
+```bash
+BUNDLE_GEMFILE=Gemfile.rails7.2 bundle install
+BUNDLE_GEMFILE=Gemfile.rails7.2 bundle exec rspec
+```
 
 ## Roadmap
 

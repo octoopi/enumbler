@@ -61,8 +61,8 @@ module Enumbler
       enumbled_model = class_name.constantize
 
       unless enumbled_model.respond_to?(:enumbles)
-        raise Error, "The model #{class_name} does not have any enumbles defined."\
-          " You can add them via `#{class_name}.enumble :blue, 1`."
+        raise Error, "The model #{class_name} does not have any enumbles defined. " \
+                     "You can add them via `#{class_name}.enumble :blue, 1`."
       end
 
       belongs_to(name, scope, **options)
@@ -100,7 +100,7 @@ module Enumbler
       end
     end
 
-    # Add the attirbutes:
+    # Add the attributes:
     #
     #   house.color_label #=> 'black'
     #   house.color_enum  #=> :black
