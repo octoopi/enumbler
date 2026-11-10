@@ -1,0 +1,23 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+gem "activemodel",   "~> 8.1.0"
+gem "activerecord",  "~> 8.1.0"
+gem "activesupport", "~> 8.1.0"
+
+# Specify your gem's dependencies in enumbler.gemspec
+gemspec
+
+# Specify any additional dependencies that are not in the gemspec
+# but are needed for development or testing.
+
+group :development, :test do
+  gem "database_cleaner-active_record", "~> 2.0"
+  gem "fuubar",                         "~> 2.5"
+  gem "pry"
+  gem "rake",                           "~> 13.0"
+  gem "rspec",                          "~> 3.9"
+  gem "rubocop",                        "~> 1.0", require: false
+  gem "sqlite3",                        ">= 2.1"
+end

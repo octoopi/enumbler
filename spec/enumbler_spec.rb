@@ -69,6 +69,7 @@ end
 
 class ModelWithoutTable < ApplicationRecord
   include Enumbler::Enabler
+
   enumble :without_hope, 1
 end
 

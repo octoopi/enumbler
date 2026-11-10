@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Enumbler is a Ruby gem that provides database-backed enums for ActiveRecord: real foreign-key lookup tables that behave like `enum`s. It supports ActiveRecord/ActiveSupport >= 6.0, < 9 and Ruby >= 3.1.
+Enumbler is a Ruby gem that provides database-backed enums for ActiveRecord: real foreign-key lookup tables that behave like `enum`s. It supports ActiveRecord/ActiveSupport >= 6.0, < 9 and Ruby >= 3.2.
 
 ## Commands
 
@@ -17,7 +17,7 @@ bundle exec rubocop                        # lint (also runs as a lefthook pre-c
 
 ### Matrix testing
 
-CI tests Ruby 3.1–3.4 against Rails 6.0–8.0 using the `Gemfile.rails*` files. To reproduce locally:
+CI tests Ruby 3.2–4.0 against Rails 6.0–8.1 (Ruby 3.4+ skips Rails < 7.1) using the `Gemfile.rails*` files. To reproduce locally:
 
 ```bash
 BUNDLE_GEMFILE=Gemfile.rails7.2 bundle install
@@ -52,4 +52,4 @@ Specs run against an in-memory SQLite database (`spec/support/establish_sqlite_c
 
 ## Style
 
-RuboCop enforces double-quoted strings, max line length 119, trailing commas in multiline literals, and `TargetRubyVersion: 3.4` — but code must still run on Ruby 3.1 (see the gemspec), so avoid 3.2+-only syntax.
+RuboCop enforces double-quoted strings, max line length 119, trailing commas in multiline literals, and `TargetRubyVersion: 3.2`, the gemspec's minimum Ruby, so avoid syntax newer than 3.2. User-facing changes go in `CHANGELOG.md`.

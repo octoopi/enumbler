@@ -149,6 +149,44 @@ Feeling.verklempt.enumble.label   # => 'overcome with emotion'
 Feeling.verklempt.emotion         # => 'overcome with emotion'
 ```
 
+### Allow duplicate labels
+
+Every enumble in a model normally needs a unique id, enum, **and** label: a second `enumble` that repeats any of the three raises `You cannot add the same Enumble twice!`.  When labels genuinely repeat, say a `Topic` table where "Classroom" appears under two different parents, opt the model in with `enumbler_allow_duplicate_labels` before its first `enumble`:
+
+```ruby
+ActiveRecord::Schema.define do
+  create_table :topics, force: true do |t|
+    t.string :label, null: false # no unique index: labels repeat
+  end
+end
+
+class Topic < ApplicationRecord
+  include Enumbler::Enabler
+
+  enumbler_allow_duplicate_labels
+
+  enumble :k12_classroom, 17, label: "Classroom"
+  enumble :higher_ed_classroom, 34, label: "Classroom"
+  enumble :science, 20, label: "Science"
+end
+```
+
+With it on, an enumble is a duplicate only when its **id or enum** is already taken.  Enum names are still unique, so constants (`Topic::K12_CLASSROOM`), class shortcuts (`Topic.k12_classroom`), predicates (`topic.k12_classroom?`), `graphql_enum`, and lookups by id, symbol, Enumble, or record all work as before.  Two Enumbles that share only a label are no longer `==`.
+
+String lookups (`find_enumble(s)`, `find_by_enumble`, `ids_from_enumbler`, the `enumbled_to` scopes, and their bang versions) become stricter:
+
+```ruby
+Topic.find_enumble("higher_ed_classroom") # => Enumbler::Enumble<:higher_ed_classroom>, by enum name
+Topic.find_enumble("Science")             # => Enumbler::Enumble<:science>, one label match resolves
+Topic.find_enumble("Art")                 # => nil, as before
+Topic.find_enumble("Classroom")           # => raises Enumbler::AmbiguousLabelError
+Lesson.topic("Classroom")                 # => raises Enumbler::AmbiguousLabelError (Lesson `enumbled_to :topic`)
+```
+
+A String that matches more than one label raises `Enumbler::AmbiguousLabelError` (a subclass of `Enumbler::Error`) **whether or not** you asked for an error on a missing value, rather than silently returning whichever enumble was defined first.  `find_by_enumble` lets it through instead of turning it into `ActiveRecord::RecordNotFound`.  Matching follows `case_sensitive:` as usual, so `"classroom"` is ambiguous too unless you pass `case_sensitive: true`.  Exact-case matches rank above case-insensitive ones, and within each an enum name ranks above a label.  So with an enum `:classroom` labeled "Classroom" and a second "Classroom" label, `"classroom"` resolves to `:classroom` but `"Classroom"` raises: it matches two labels exactly, and resolving it to an enum that only matches ignoring case would be a guess.  Likewise `"Classroom"` still resolves when the only other label is `"classroom"`.
+
+Models that do not call `enumbler_allow_duplicate_labels` behave exactly as they always have.
+
 ## Core ext
 
 Adds case equality power to the `Symbol` class allowing you to use case methods directly against an enabled instance:
@@ -199,7 +237,7 @@ Two things to know before tagging:
 
 Steps:
 
-1. Bump `Enumbler::VERSION` in `lib/enumbler/version.rb` (and run `bundle install` so the lockfiles pick it up) on a `release/x.y.z` branch off `develop` (or `hotfix/x.y.z` off `main`).
+1. Bump `Enumbler::VERSION` in `lib/enumbler/version.rb` and add its section to `CHANGELOG.md`, then refresh every lockfile so it records the new version (`for g in Gemfile Gemfile.rails*[0-9]; do BUNDLE_GEMFILE=$g bundle lock; done`) on a `release/x.y.z` branch off `develop` (or `hotfix/x.y.z` off `main`).
 2. Merge the branch into `main`, then tag the release commit:
 
    ```bash
@@ -213,7 +251,7 @@ Steps:
 
 ### Matrix testing
 
-This gem supporst different versions of Ruby and Rails.  To test against all supported versions, run:
+The gem supports Ruby >= 3.2 and ActiveRecord/ActiveSupport >= 6.0, < 9.  CI runs the rspec matrix across those using one `Gemfile.rails*` per Rails minor (6.0 through 8.1); the main `Gemfile` tracks the newest Rails.  To test against one of them locally, run:
 
 ```bash
 BUNDLE_GEMFILE=Gemfile.rails7.2 bundle install
@@ -226,7 +264,7 @@ BUNDLE_GEMFILE=Gemfile.rails7.2 bundle exec rspec
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/linguabee/enumbler.
+Bug reports and pull requests are welcome on GitHub at https://github.com/octoopi/enumbler.
 
 ## License
 
