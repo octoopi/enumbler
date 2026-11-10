@@ -191,15 +191,18 @@ RSpec.describe Enumbler::Enabler, "duplicate labels" do
       expect { model.find_enumble("ClassRoom") }.to raise_error(Enumbler::AmbiguousLabelError)
     end
 
-    it "prefers an exact-case label over a case-insensitive enum name" do
+    it "prefers an enum name in any case over a label" do
       model = enumbler_model do
         enumbler_allow_duplicate_labels
-        enumble :art, 1, label: "History"
-        enumble :history, 2, label: "Art"
+        enumble :science, 1, label: "Science"
+        enumble :ap_science, 2, label: "Science"
+        enumble :art, 3, label: "History"
+        enumble :history, 4, label: "Art"
       end
 
-      expect(model.find_enumble("Art").enum).to eq :history
-      expect(model.find_enumble("art").enum).to eq :art
+      expect(model.find_enumble("Science").enum).to eq :science
+      expect(model.find_enumble("Art").enum).to eq :art
+      expect(model.find_enumble("Art", case_sensitive: true).enum).to eq :history
     end
 
     it "does not take the flag from an attribute of the same name" do
