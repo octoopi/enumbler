@@ -17,6 +17,12 @@ module Enumbler
   # An error raised by the Enumbler.
   class Error < StandardError; end
 
+  # Raised when a String lookup matches the labels of more than one enumble,
+  # which can only happen on a model that calls
+  # `enumbler_allow_duplicate_labels`.  Raised whether or not the lookup was
+  # asked to raise on a missing value: a guess is worse than no answer.
+  class AmbiguousLabelError < Error; end
+
   class << self
     attr_writer :suppress_database_warnings
 

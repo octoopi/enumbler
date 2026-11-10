@@ -3,7 +3,18 @@
 All notable changes to this gem are recorded here.  Versions follow the bare
 git tags on `main` (no `v` prefix).
 
-## Unreleased
+## 0.12.0
+
+### Added
+
+- `enumbler_allow_duplicate_labels`: a per-model opt-in, declared before the
+  first `enumble`, that lets enumbles share a label.  Duplicates are then
+  rejected only on id or enum, and Enumbles that share only a label are no
+  longer `==`/`eql?`.  On such a model a String lookup that matches an enum
+  name resolves to it; one that matches more than one label raises the new
+  `Enumbler::AmbiguousLabelError` (an `Enumbler::Error`), even without
+  `raise_error`, and `find_by_enumble` passes it through rather than raising
+  `ActiveRecord::RecordNotFound`.  Models that do not opt in are unchanged.
 
 ### Changed
 
