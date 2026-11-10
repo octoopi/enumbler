@@ -153,9 +153,10 @@ module Enumbler
       # and friends) that matches an enum name still resolves to that enumble.
       # One that matches no enum name but more than one label raises
       # {Enumbler::AmbiguousLabelError}, even without `raise_error`, rather
-      # than return whichever was defined first.  A case-insensitive lookup
-      # compares labels exact-case first, and ignores case only when no label
-      # matches exactly.
+      # than return whichever was defined first.  Exact-case matches beat
+      # case-insensitive ones; within each, an enum name beats a label.  So
+      # with `:classroom` labeled "Classroom" and a second "Classroom" label,
+      # "classroom" resolves to `:classroom` but "Classroom" raises.
       #
       # Remember to drop any unique index on the label column.
       #
@@ -227,6 +228,9 @@ module Enumbler
       # want one argument to be found and not returned in an array.
       # @raise [Error] when there is no [Enumbler::Enumble] to be found and
       #   `raise_error: true`
+      # @raise [AmbiguousLabelError] on a model with
+      #   {.enumbler_allow_duplicate_labels}, when a String matches more than
+      #   one label (regardless of `raise_error`)
       # @param args [Integer, String, Symbol]
       # @param case_sensitive [Boolean] should a String search be case sensitive
       #   (default: false)
@@ -242,6 +246,9 @@ module Enumbler
       # if none found.
       # @raise [Error] when there is no [Enumbler::Enumble] to be found and
       #   `raise_error: true`
+      # @raise [AmbiguousLabelError] on a model with
+      #   {.enumbler_allow_duplicate_labels}, when a String matches more than
+      #   one label (regardless of `raise_error`)
       # @param args [Integer, String, Symbol]
       # @param case_sensitive [Boolean] should a String search be case sensitive
       #   (default: false)
@@ -262,6 +269,9 @@ module Enumbler
       #
       # @raise [Error] when there is no [Enumbler::Enumble] to be found and
       #   `raise_error: true`
+      # @raise [AmbiguousLabelError] on a model with
+      #   {.enumbler_allow_duplicate_labels}, when a String matches more than
+      #   one label (regardless of `raise_error`)
       # @param args [Integer, String, Symbol]
       # @param case_sensitive [Boolean] should a String search be case sensitive
       #   (default: false)
@@ -312,6 +322,8 @@ module Enumbler
 
       # See {.find_enumbles}.  Same method, only raises error when none found.
       # @raise [Error] when there is no [Enumbler::Enumble] to be found
+      # @raise [AmbiguousLabelError] when a String matches more than one label
+      #   (see {.enumbler_allow_duplicate_labels})
       # @param args [Integer, String, Symbol]
       # @param case_sensitive [Boolean] should a String search be case sensitive
       #   (default: false)
@@ -329,6 +341,8 @@ module Enumbler
       #   Color.id_from_enumbler(Color.black) # => 1
       #
       # @raise [Error] when there is no enumble to be found
+      # @raise [AmbiguousLabelError] when a String matches more than one label
+      #   (see {.enumbler_allow_duplicate_labels})
       # @param arg [Integer, Symbol, Class]
       # @param case_sensitive [Boolean] should a string search be performed with
       #   case sensitivity (default: false)
@@ -341,6 +355,8 @@ module Enumbler
 
       # See {.ids_from_enumbler}.  Raises error if none found.
       # @raise [Error] when there is no enumble to be found
+      # @raise [AmbiguousLabelError] when a String matches more than one label
+      #   (see {.enumbler_allow_duplicate_labels})
       # @param arg [Integer, Symbol, Class]
       # @param case_sensitive [Boolean] should a string search be performed with
       #   case sensitivity (default: false)
@@ -361,6 +377,8 @@ module Enumbler
       #   Color.ids_from_enumbler(Color.black, Color.white) # => [1, 2]
       #
       # @raise [Error] when there is no enumble to be found
+      # @raise [AmbiguousLabelError] when a String matches more than one label
+      #   (see {.enumbler_allow_duplicate_labels})
       # @param *args [Integer, Symbol, Class]
       # @param case_sensitive [Boolean] should a string search be performed with
       #   case sensitivity (default: false)
@@ -374,6 +392,8 @@ module Enumbler
 
       # See {.ids_from_enumbler}.  Raises error when none found.
       # @raise [Error] when there is no enumble to be found
+      # @raise [AmbiguousLabelError] when a String matches more than one label
+      #   (see {.enumbler_allow_duplicate_labels})
       # @param *args [Integer, Symbol, Class]
       # @param case_sensitive [Boolean] should a string search be performed with
       #   case sensitivity (default: false)
@@ -430,21 +450,20 @@ module Enumbler
       private
 
       # The String branch of {.find_enumbles} for a model that allows
-      # duplicate labels.  An enum-name match wins outright (exact case
-      # first, then ignoring case unless `case_sensitive`).  Failing that, a
-      # single label match resolves and more than one raises; a
-      # case-insensitive search tries exact-case labels first, so "Classroom"
-      # still resolves when another label is only "classroom".
+      # duplicate labels.  Matching runs in tiers: exact case first, then
+      # (unless `case_sensitive`) ignoring case.  Within a tier an enum name
+      # wins, then a single label match resolves and more than one raises.
+      # So an exact-case label shared by two enumbles raises even when some
+      # enum name matches it ignoring case: better than guessing.
       def find_enumble_by_string_allowing_duplicate_labels(arg, case_sensitive:)
-        passes = [->(value) { arg == value }]
-        passes << ->(value) { arg.casecmp?(value) } unless case_sensitive
+        tiers = [->(value) { arg == value }]
+        tiers << ->(value) { arg.casecmp?(value) } unless case_sensitive
 
-        enumbles = @enumbled_model.enumbles
-        by_enum = passes.lazy.filter_map { |matches| enumbles.find { |e| matches.call(e.enum.to_s) } }.first
-        return by_enum if by_enum.present?
+        tiers.each do |matches|
+          by_enum = @enumbled_model.enumbles.find { |e| matches.call(e.enum.to_s) }
+          return by_enum if by_enum
 
-        passes.each do |matches|
-          by_label = enumbles.select { |e| matches.call(e.label) }
+          by_label = @enumbled_model.enumbles.select { |e| matches.call(e.label) }
           next if by_label.empty?
           return by_label.first if by_label.one?
 
