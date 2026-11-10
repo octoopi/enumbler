@@ -199,7 +199,7 @@ Two things to know before tagging:
 
 Steps:
 
-1. Bump `Enumbler::VERSION` in `lib/enumbler/version.rb` (and run `bundle install` so the lockfiles pick it up) on a `release/x.y.z` branch off `develop` (or `hotfix/x.y.z` off `main`).
+1. Bump `Enumbler::VERSION` in `lib/enumbler/version.rb` and add its section to `CHANGELOG.md`, then refresh every lockfile so it records the new version (`for g in Gemfile Gemfile.rails*[0-9]; do BUNDLE_GEMFILE=$g bundle lock; done`) on a `release/x.y.z` branch off `develop` (or `hotfix/x.y.z` off `main`).
 2. Merge the branch into `main`, then tag the release commit:
 
    ```bash
@@ -213,7 +213,7 @@ Steps:
 
 ### Matrix testing
 
-This gem supporst different versions of Ruby and Rails.  To test against all supported versions, run:
+The gem supports Ruby >= 3.2 and ActiveRecord/ActiveSupport >= 6.0, < 9.  CI runs the rspec matrix across those using one `Gemfile.rails*` per Rails minor (6.0 through 8.1); the main `Gemfile` tracks the newest Rails.  To test against one of them locally, run:
 
 ```bash
 BUNDLE_GEMFILE=Gemfile.rails7.2 bundle install
@@ -226,7 +226,7 @@ BUNDLE_GEMFILE=Gemfile.rails7.2 bundle exec rspec
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/linguabee/enumbler.
+Bug reports and pull requests are welcome on GitHub at https://github.com/octoopi/enumbler.
 
 ## License
 
