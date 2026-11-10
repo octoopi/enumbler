@@ -14,7 +14,8 @@ git tags on `main` (no `v` prefix).
   name resolves to it; one that matches more than one label raises the new
   `Enumbler::AmbiguousLabelError` (an `Enumbler::Error`), even without
   `raise_error`, and `find_by_enumble` passes it through rather than raising
-  `ActiveRecord::RecordNotFound`.  Models that do not opt in are unchanged.
+  `ActiveRecord::RecordNotFound`.  A case-insensitive lookup tries an exact-case match
+  first.  Models that do not opt in are unchanged.
 
 ### Changed
 

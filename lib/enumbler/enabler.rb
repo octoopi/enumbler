@@ -98,14 +98,8 @@ module Enumbler
         @enumbled_model = self
         @enumbler_label_column_name ||= :label
 
-        enumble = Enumble.new(
-          enum,
-          id,
-          label: label,
-          label_column_name: @enumbler_label_column_name,
-          allow_duplicate_labels: enumbler_allow_duplicate_labels?,
-          **attributes,
-        )
+        enumble = Enumble.new(enum, id, label: label, label_column_name: @enumbler_label_column_name, **attributes)
+        enumble.allow_duplicate_labels! if enumbler_allow_duplicate_labels?
 
         if @enumbles.include?(enumble)
           raise Error, "You cannot add the same Enumble twice! Attempted to add: #{enum}, #{id}."
@@ -177,7 +171,7 @@ module Enumbler
       # {.enumbler_allow_duplicate_labels}.
       # @return [Boolean]
       def enumbler_allow_duplicate_labels?
-        @enumbler_allow_duplicate_labels == true
+        @enumbler_allow_duplicate_labels || false
       end
 
       # Like `ActiveRecord#find_by`, will try and return an instance of this
@@ -434,22 +428,28 @@ module Enumbler
       private
 
       # The String branch of {.find_enumbles} for a model that allows
-      # duplicate labels: an enum-name match wins outright, a single label
-      # match resolves, and more than one label match raises.
+      # duplicate labels.  An enum-name match wins outright, a single label
+      # match resolves, and more than one label match raises.  A
+      # case-insensitive search tries an exact-case pass first, so "Classroom"
+      # still resolves when another label is only "classroom".
       def find_enumble_by_string_allowing_duplicate_labels(arg, case_sensitive:)
-        matches = lambda do |value|
-          case_sensitive ? arg == value : arg.casecmp?(value)
+        passes = [->(value) { arg == value }]
+        passes << ->(value) { arg.casecmp?(value) } unless case_sensitive
+
+        passes.each do |matches|
+          by_enum = @enumbled_model.enumbles.find { |e| matches.call(e.enum.to_s) }
+          return by_enum if by_enum.present?
+
+          by_label = @enumbled_model.enumbles.select { |e| matches.call(e.label) }
+          next if by_label.empty?
+          return by_label.first if by_label.one?
+
+          raise AmbiguousLabelError,
+            "#{@enumbled_model} has more than one enumble labeled #{arg.inspect} " \
+            "(#{by_label.map { |e| ":#{e.enum}" }.join(', ')}); look it up by enum or id instead."
         end
 
-        by_enum = @enumbled_model.enumbles.find { |e| matches.call(e.enum.to_s) }
-        return by_enum if by_enum.present?
-
-        by_label = @enumbled_model.enumbles.select { |e| matches.call(e.label) }
-        return by_label.first if by_label.size <= 1
-
-        raise AmbiguousLabelError,
-          "#{@enumbled_model} has more than one enumble labeled #{arg.inspect} " \
-          "(#{by_label.map { |e| ":#{e.enum}" }.join(', ')}); look it up by enum or id instead."
+        nil
       end
 
       def define_dynamic_methods_and_constants_for_enumbled_model(enumble)

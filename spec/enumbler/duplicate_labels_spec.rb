@@ -178,6 +178,37 @@ RSpec.describe Enumbler::Enabler, "duplicate labels" do
       expect(Topic.find_by_enumble("higher_ed_classroom")).to eq Topic.find(34)
     end
 
+    it "tries an exact-case match before a case-insensitive one" do
+      model = enumbler_model do
+        enumbler_allow_duplicate_labels
+        enumble :upper, 1, label: "Classroom"
+        enumble :lower, 2, label: "classroom"
+        enumble :shouty, 3, label: "CLASSROOM"
+      end
+
+      expect(model.find_enumble("Classroom").enum).to eq :upper
+      expect(model.find_enumble("classroom").enum).to eq :lower
+      expect { model.find_enumble("ClassRoom") }.to raise_error(Enumbler::AmbiguousLabelError)
+    end
+
+    it "prefers an exact-case label over a case-insensitive enum name" do
+      model = enumbler_model do
+        enumbler_allow_duplicate_labels
+        enumble :art, 1, label: "History"
+        enumble :history, 2, label: "Art"
+      end
+
+      expect(model.find_enumble("Art").enum).to eq :history
+      expect(model.find_enumble("art").enum).to eq :art
+    end
+
+    it "does not take the flag from an attribute of the same name" do
+      enumble = Enumbler::Enumble.new(:a, 1, label: "x", allow_duplicate_labels: true)
+
+      expect(enumble.allow_duplicate_labels?).to be false
+      expect(enumble.attributes).to include(allow_duplicate_labels: true)
+    end
+
     it "makes AmbiguousLabelError an Enumbler::Error" do
       expect { Topic.find_enumble("Classroom") }.to raise_error(Enumbler::Error)
     end

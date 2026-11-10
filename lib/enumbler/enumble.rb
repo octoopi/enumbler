@@ -5,14 +5,11 @@ module Enumbler
   class Enumble
     attr_reader :id, :enum, :label, :label_column_name
 
-    # @param allow_duplicate_labels [Boolean] when true, a shared label no
-    #   longer makes two Enumbles equal; only id or enum do.  Set by
-    #   {Enumbler::Enabler::ClassMethods#enumbler_allow_duplicate_labels}.
-    def initialize(enum, id, label: nil, label_column_name: :label, allow_duplicate_labels: false, **attributes)
+    def initialize(enum, id, label: nil, label_column_name: :label, **attributes)
       @id = id
       @enum = enum
       @label_column_name = label_column_name
-      @allow_duplicate_labels = allow_duplicate_labels
+      @allow_duplicate_labels = false
       @label = (label_col_specified? ? attributes[label_column_name] : label) || enum.to_s.dasherize
       @additional_attributes = attributes || {}
       @additional_attributes.merge!({ label: label }) unless label.nil?
@@ -40,15 +37,24 @@ module Enumbler
       self
     end
 
-    def eql?(other)
-      other.class == self.class &&
-        (other.id == id || other.enum == enum || same_label_as?(other))
-    end
+    alias eql? ==
 
     # Whether this Enumble may share its label with another in its model.
     # @return [Boolean]
     def allow_duplicate_labels?
       @allow_duplicate_labels
+    end
+
+    # Lets this Enumble share its label: a shared label no longer makes two
+    # Enumbles equal, only id or enum do.  Called by `enumble` on a model that
+    # uses {Enumbler::Enabler::ClassMethods#enumbler_allow_duplicate_labels};
+    # it is not a constructor keyword so it cannot collide with a column name
+    # passed through `**attributes`.
+    # @api private
+    # @return [self]
+    def allow_duplicate_labels!
+      @allow_duplicate_labels = true
+      self
     end
 
     # Standardizing the enum for a GraphQL schema with an uppercase string
