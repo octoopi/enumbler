@@ -1,6 +1,7 @@
 AllCops:
   NewCops: enable
-  TargetRubyVersion: 3.4
+  SuggestExtensions: false
+  TargetRubyVersion: 3.2
   Exclude:
     - 'bin/**/*'
 
@@ -42,7 +43,7 @@ Naming/MethodParameterName:
   Enabled: true
   AllowedNames: [at, by, db, id, in, ip, of, on, to, tz]
 
-Naming/PredicateName:
+Naming/PredicatePrefix:
   Enabled: true
 
 # Works in 3.4 only
