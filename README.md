@@ -176,14 +176,14 @@ With it on, an enumble is a duplicate only when its **id or enum** is already ta
 String lookups (`find_enumble(s)`, `find_by_enumble`, `ids_from_enumbler`, the `enumbled_to` scopes, and their bang versions) become stricter:
 
 ```ruby
-Topic.find_enumble("higher_ed_classroom") # => Enumbler::Enumble<:higher_ed_classroom>, an enum name wins
+Topic.find_enumble("higher_ed_classroom") # => Enumbler::Enumble<:higher_ed_classroom>, enum names beat labels
 Topic.find_enumble("Science")             # => Enumbler::Enumble<:science>, one label match resolves
 Topic.find_enumble("Art")                 # => nil, as before
 Topic.find_enumble("Classroom")           # => raises Enumbler::AmbiguousLabelError
 Lesson.topic("Classroom")                 # => raises Enumbler::AmbiguousLabelError (Lesson `enumbled_to :topic`)
 ```
 
-A String that matches more than one label raises `Enumbler::AmbiguousLabelError` (a subclass of `Enumbler::Error`) **whether or not** you asked for an error on a missing value, rather than silently returning whichever enumble was defined first.  `find_by_enumble` lets it through instead of turning it into `ActiveRecord::RecordNotFound`.  Matching follows `case_sensitive:` as usual, so `"classroom"` is ambiguous too unless you pass `case_sensitive: true`.  A case-insensitive lookup (the default) tries an exact-case match first, enum names then labels, and falls back to ignoring case only when that finds nothing.  So `"Classroom"` still resolves when the only other label is `"classroom"`.
+A String that matches more than one label raises `Enumbler::AmbiguousLabelError` (a subclass of `Enumbler::Error`) **whether or not** you asked for an error on a missing value, rather than silently returning whichever enumble was defined first.  `find_by_enumble` lets it through instead of turning it into `ActiveRecord::RecordNotFound`.  Matching follows `case_sensitive:` as usual, so `"classroom"` is ambiguous too unless you pass `case_sensitive: true`.  Enum names are checked before labels, in exact case and then (by default) ignoring case.  Labels are then compared exact-case first, with case ignored only when no label matches exactly, so `"Classroom"` still resolves when the only other label is `"classroom"`.
 
 Models that do not call `enumbler_allow_duplicate_labels` behave exactly as they always have.
 

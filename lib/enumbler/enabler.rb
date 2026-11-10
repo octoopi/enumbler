@@ -153,7 +153,9 @@ module Enumbler
       # and friends) that matches an enum name still resolves to that enumble.
       # One that matches no enum name but more than one label raises
       # {Enumbler::AmbiguousLabelError}, even without `raise_error`, rather
-      # than return whichever was defined first.
+      # than return whichever was defined first.  A case-insensitive lookup
+      # compares labels exact-case first, and ignores case only when no label
+      # matches exactly.
       #
       # Remember to drop any unique index on the label column.
       #
@@ -428,19 +430,21 @@ module Enumbler
       private
 
       # The String branch of {.find_enumbles} for a model that allows
-      # duplicate labels.  An enum-name match wins outright, a single label
-      # match resolves, and more than one label match raises.  A
-      # case-insensitive search tries an exact-case pass first, so "Classroom"
+      # duplicate labels.  An enum-name match wins outright (exact case
+      # first, then ignoring case unless `case_sensitive`).  Failing that, a
+      # single label match resolves and more than one raises; a
+      # case-insensitive search tries exact-case labels first, so "Classroom"
       # still resolves when another label is only "classroom".
       def find_enumble_by_string_allowing_duplicate_labels(arg, case_sensitive:)
         passes = [->(value) { arg == value }]
         passes << ->(value) { arg.casecmp?(value) } unless case_sensitive
 
-        passes.each do |matches|
-          by_enum = @enumbled_model.enumbles.find { |e| matches.call(e.enum.to_s) }
-          return by_enum if by_enum.present?
+        enumbles = @enumbled_model.enumbles
+        by_enum = passes.lazy.filter_map { |matches| enumbles.find { |e| matches.call(e.enum.to_s) } }.first
+        return by_enum if by_enum.present?
 
-          by_label = @enumbled_model.enumbles.select { |e| matches.call(e.label) }
+        passes.each do |matches|
+          by_label = enumbles.select { |e| matches.call(e.label) }
           next if by_label.empty?
           return by_label.first if by_label.one?
 
