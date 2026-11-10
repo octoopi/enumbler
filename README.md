@@ -149,6 +149,44 @@ Feeling.verklempt.enumble.label   # => 'overcome with emotion'
 Feeling.verklempt.emotion         # => 'overcome with emotion'
 ```
 
+### Allow duplicate labels
+
+Every enumble in a model normally needs a unique id, enum, **and** label: a second `enumble` that repeats any of the three raises `You cannot add the same Enumble twice!`.  When labels genuinely repeat, say a `Topic` table where "Classroom" appears under two different parents, opt the model in with `enumbler_allow_duplicate_labels` before its first `enumble`:
+
+```ruby
+ActiveRecord::Schema.define do
+  create_table :topics, force: true do |t|
+    t.string :label, null: false # no unique index: labels repeat
+  end
+end
+
+class Topic < ApplicationRecord
+  include Enumbler::Enabler
+
+  enumbler_allow_duplicate_labels
+
+  enumble :k12_classroom, 17, label: "Classroom"
+  enumble :higher_ed_classroom, 34, label: "Classroom"
+  enumble :science, 20, label: "Science"
+end
+```
+
+With it on, an enumble is a duplicate only when its **id or enum** is already taken.  Enum names are still unique, so constants (`Topic::K12_CLASSROOM`), class shortcuts (`Topic.k12_classroom`), predicates (`topic.k12_classroom?`), `graphql_enum`, and lookups by id, symbol, Enumble, or record all work as before.  Two Enumbles that share only a label are no longer `==`.
+
+String lookups (`find_enumble(s)`, `find_by_enumble`, `ids_from_enumbler`, the `enumbled_to` scopes, and their bang versions) become stricter:
+
+```ruby
+Topic.find_enumble("higher_ed_classroom") # => Enumbler::Enumble<:higher_ed_classroom>, an enum name always wins
+Topic.find_enumble("Science")             # => Enumbler::Enumble<:science>, one label match resolves
+Topic.find_enumble("Art")                 # => nil, as before
+Topic.find_enumble("Classroom")           # => raises Enumbler::AmbiguousLabelError
+Lesson.topic("Classroom")                 # => raises Enumbler::AmbiguousLabelError (Lesson `enumbled_to :topic`)
+```
+
+A String that matches more than one label raises `Enumbler::AmbiguousLabelError` (a subclass of `Enumbler::Error`) **whether or not** you asked for an error on a missing value, rather than silently returning whichever enumble was defined first.  `find_by_enumble` lets it through instead of turning it into `ActiveRecord::RecordNotFound`.  Matching follows `case_sensitive:` as usual, so `"classroom"` is ambiguous too unless you pass `case_sensitive: true`.
+
+Models that do not call `enumbler_allow_duplicate_labels` behave exactly as they always have.
+
 ## Core ext
 
 Adds case equality power to the `Symbol` class allowing you to use case methods directly against an enabled instance:

@@ -98,7 +98,14 @@ module Enumbler
         @enumbled_model = self
         @enumbler_label_column_name ||= :label
 
-        enumble = Enumble.new(enum, id, label: label, label_column_name: @enumbler_label_column_name, **attributes)
+        enumble = Enumble.new(
+          enum,
+          id,
+          label: label,
+          label_column_name: @enumbler_label_column_name,
+          allow_duplicate_labels: enumbler_allow_duplicate_labels?,
+          **attributes,
+        )
 
         if @enumbles.include?(enumble)
           raise Error, "You cannot add the same Enumble twice! Attempted to add: #{enum}, #{id}."
@@ -133,6 +140,46 @@ module Enumbler
         @enumbler_label_column_name = label_column_name
       end
 
+      # By default every enumble in a model needs a unique id, enum, and
+      # label.  Call this before your first `enumble` to let labels repeat:
+      # an enumble is then rejected as a duplicate only when its id or enum is
+      # already taken.  Enum names stay unique, so constants, class
+      # shortcuts, predicates, and `graphql_enum` are unaffected.
+      #
+      #   class Topic < ApplicationRecord
+      #     include Enumbler::Enabler
+      #
+      #     enumbler_allow_duplicate_labels
+      #
+      #     enumble :k12_classroom, 17, label: "Classroom"
+      #     enumble :higher_ed_classroom, 34, label: "Classroom"
+      #   end
+      #
+      # A String lookup (`find_enumble`, `find_by_enumble`, `ids_from_enumbler`
+      # and friends) that matches an enum name still resolves to that enumble.
+      # One that matches no enum name but more than one label raises
+      # {Enumbler::AmbiguousLabelError}, even without `raise_error`, rather
+      # than return whichever was defined first.
+      #
+      # Remember to drop any unique index on the label column.
+      #
+      # @param allow [Boolean] (default: true)
+      # @raise [Error] when called after the model has defined an enumble
+      def enumbler_allow_duplicate_labels(allow = true) # rubocop:disable Style/OptionalBooleanParameter
+        if @enumbles.present?
+          raise Error, "Call `enumbler_allow_duplicate_labels` on #{self} before its first `enumble`."
+        end
+
+        @enumbler_allow_duplicate_labels = allow ? true : false
+      end
+
+      # Whether this model lets enumbles share a label.  See
+      # {.enumbler_allow_duplicate_labels}.
+      # @return [Boolean]
+      def enumbler_allow_duplicate_labels?
+        @enumbler_allow_duplicate_labels == true
+      end
+
       # Like `ActiveRecord#find_by`, will try and return an instance of this
       # model that matches any of our enumble attributes (instance, id, string,
       # or symbol).
@@ -155,6 +202,8 @@ module Enumbler
 
         find_by = raise_error ? :find_by! : :find_by
         @enumbled_model.public_send(find_by, id: id)
+      rescue Enumbler::AmbiguousLabelError
+        raise
       rescue Enumbler::Error
         raise ActiveRecord::RecordNotFound.new("Couldn't find #{@enumbled_model}", @enumbled_model)
       end
@@ -236,6 +285,8 @@ module Enumbler
                 @enumbled_model.enumbles.find { |e| e.enum == arg }
               elsif arg.is_a?(Enumbler::Enumble)
                 @enumbled_model.enumbles.find { |e| e.enum == arg.enum }
+              elsif arg.is_a?(String) && @enumbled_model.enumbler_allow_duplicate_labels?
+                find_enumble_by_string_allowing_duplicate_labels(arg, case_sensitive: case_sensitive)
               elsif arg.is_a?(String)
                 @enumbled_model.enumbles.find do |e|
                   if case_sensitive
@@ -256,6 +307,8 @@ module Enumbler
 
             nil
           end
+        rescue AmbiguousLabelError
+          raise
         rescue Error
           raise Error, err
         end
@@ -379,6 +432,25 @@ module Enumbler
       end
 
       private
+
+      # The String branch of {.find_enumbles} for a model that allows
+      # duplicate labels: an enum-name match wins outright, a single label
+      # match resolves, and more than one label match raises.
+      def find_enumble_by_string_allowing_duplicate_labels(arg, case_sensitive:)
+        matches = lambda do |value|
+          case_sensitive ? arg == value : arg.casecmp?(value)
+        end
+
+        by_enum = @enumbled_model.enumbles.find { |e| matches.call(e.enum.to_s) }
+        return by_enum if by_enum.present?
+
+        by_label = @enumbled_model.enumbles.select { |e| matches.call(e.label) }
+        return by_label.first if by_label.size <= 1
+
+        raise AmbiguousLabelError,
+          "#{@enumbled_model} has more than one enumble labeled #{arg.inspect} " \
+          "(#{by_label.map { |e| ":#{e.enum}" }.join(', ')}); look it up by enum or id instead."
+      end
 
       def define_dynamic_methods_and_constants_for_enumbled_model(enumble)
         method_name = "#{enumble.enum}?"
